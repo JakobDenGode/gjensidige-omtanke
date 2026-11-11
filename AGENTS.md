@@ -10,6 +10,13 @@
 - Preserve accessibility when recreating UI: semantic landmarks and headings, labeled controls, keyboard interaction, visible focus, and mobile layouts without horizontal overflow.
 - Keep implementations small. Add shared components only when reuse is needed.
 
+## Supabase
+
+- Supabase is explicitly approved for real persistence. Project: `fiobfnbeiqmdlffntxxv` (Stockholm).
+- Keep schema changes in `supabase/migrations`. Enable row-level security and restrict records to their authenticated owner; never allow anonymous public access to personal data.
+- Only public client keys may use `NEXT_PUBLIC_` variables. Never commit secrets, service-role keys, or database passwords.
+- The design UI remains a prototype until its submit and list flows are explicitly connected. Do not claim that a mock confirmation saves data.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know

@@ -6,7 +6,7 @@ The homepage displays "Gjensidige Omtanke" with lightweight local styles matchin
 It loads Gjensidige Display and Sans from the public Gjensidige CDN, with no
 Builders npm packages or analytics dependencies. Future functionality is mocked
 with local data until real integrations are explicitly requested; see `AGENTS.md`.
-There is no authentication, database, or API, and no environment variables are required.
+Supabase is provisioned for persistence. The design UI is not connected yet.
 
 Live app: https://gjensidige-omtanke.vercel.app
 
@@ -40,12 +40,31 @@ To serve a production build locally, run `npm start` after building.
 
 The repository is connected to the `gjensidige-omtanke` Vercel project.
 It uses the Next.js preset, the repository root, and Node.js 24.x.
-No environment variables are needed.
+Configure the two public Supabase variables from `.env.example` in Vercel before
+deploying database-connected functionality. Never expose a service-role key.
 
 Vercel deploys `main` to production and creates preview deployments
 for pull requests. The Vercel dashboard shows the assigned public URL.
 
-## Scope
+## Supabase Setup
+
+Dashboard: https://supabase.com/dashboard/project/fiobfnbeiqmdlffntxxv
+
+The project is in Stockholm under JakobDenGode's Org. Local connection settings
+are in ignored `.env.local`; `.env.example` documents the required public variables.
+The client factory is in `src/lib/supabase.ts`.
+
+Version-controlled migrations define `help_requests` for requests and offers.
+Authenticated users can create/read their own records and update their status.
+Anonymous access is denied. Sign-in and UI persistence are not implemented yet.
+
+```bash
+npx supabase@latest login
+npx supabase@latest db push --remote=fiobfnbeiqmdlffntxxv
+```
+
+The initial database password was generated during provisioning and is not stored
+in the repository. Reset it in the dashboard if direct database access is needed.
 
 Keep this iteration small. Add mocked functionality before introducing real
 authentication, Supabase, or REST endpoints. Never commit credentials or `.env` files.
