@@ -1,7 +1,8 @@
 # Gjensidige Omtanke
 
 A minimal Next.js App Router application with TypeScript and ESLint.
-The first iteration displays "Hello world" at `/`.
+The homepage displays "Gjensidige Omtanke" using the official Builders components,
+Gjensidige Display heading font, Gjensidige Sans body font, and design tokens.
 There is no authentication, database, or API, and no environment variables are required.
 
 Live app: https://gjensidige-omtanke.vercel.app
