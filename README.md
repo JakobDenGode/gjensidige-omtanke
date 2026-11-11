@@ -88,7 +88,8 @@ The client factory is in `src/lib/supabase.ts`.
 
 Version-controlled migrations define `help_requests` for requests and offers.
 Authenticated users can create/read their own records and update their status.
-Anonymous access is denied. Sign up on `/design`, confirm your email, then sign in.
+Anonymous access is denied. Sign up on `/design` to sign in immediately.
+Email ownership is not verified: confirmation is disabled for this demo.
 Signed-out visitors see only the login/registration screen. The application is
 not mounted until the session is loaded and signed in. Account details and sign-out
 are available in the header's "Min konto" dropdown; Escape or an outside click
@@ -100,11 +101,11 @@ The initial migration has been applied through the CLI query API and registered
 in Supabase migration history because the direct `db push` login timed out.
 
 Authentication configuration in `supabase/config.toml` specifies the production
-site URL, local/production confirmation redirects, and email confirmation. These
+site URL, local/production confirmation redirects, and disabled email confirmation. These
 settings have been synced to hosted Auth after reviewing `supabase config diff`.
-Configure custom SMTP in Supabase for unrestricted confirmation email delivery;
-the default email service is restricted and rate-limited. Never disable email
-confirmation just to bypass delivery restrictions.
+Before using real personal data or launching beyond the demo, configure custom
+SMTP and re-enable email confirmation. The default email service is restricted
+and rate-limited. Existing unconfirmed accounts may still need recovery separately.
 
 Run the rollback-only owner isolation test against the hosted project:
 

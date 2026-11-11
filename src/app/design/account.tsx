@@ -291,11 +291,20 @@ export default function Account({ children }: { children: ReactNode }) {
                         setMessage(
                           "Sjekk e-posten din for å bekrefte kontoen. Logg deretter inn her. Hvis adressen allerede er registrert, kan du logge inn.",
                         );
-                    } catch {
+                    } catch (error) {
+                      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+                      const authErrors: Record<string, string> = {
+                        over_email_send_rate_limit: "E-posttjenesten har nådd grensen for bekreftelsesmeldinger. Dette skyldes ikke e-postadressen eller passordet ditt. Prøv senere; tjenesten må få økt sendekapasitet før alle kan registrere seg.",
+                        over_request_rate_limit: "For mange forsøk på kort tid. Vent litt før du prøver igjen.",
+                        email_not_confirmed: "Bekreft e-postadressen via lenken i e-posten før du logger inn. Sjekk også søppelpost.",
+                        email_address_not_authorized: "E-posttjenesten tillater ikke sending til denne adressen ennå. Tjenesten må konfigurere e-postlevering for nye brukere.",
+                        weak_password: "Passordet oppfyller ikke sikkerhetskravene. Velg et sterkere passord med minst 8 tegn.",
+                        signup_disabled: "Registrering av nye kontoer er midlertidig deaktivert.",
+                      };
                       setError(
-                        authMode === "signup"
+                        (typeof code === "string" && authErrors[code]) || (authMode === "signup"
                           ? "Kunne ikke opprette konto. Bruk en gyldig e-post og minst 8 tegn i passordet. Prøv igjen senere hvis du har gjort mange forsøk."
-                          : "Kunne ikke logge inn. Kontroller e-post, passord og at e-posten er bekreftet.",
+                          : "Kunne ikke logge inn. Kontroller e-post, passord og at e-posten er bekreftet."),
                       );
                     } finally {
                       setBusy(false);
