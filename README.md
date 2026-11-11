@@ -4,6 +4,10 @@ A minimal Next.js App Router application with TypeScript and ESLint.
 The first iteration displays "Hello world" at `/`.
 There is no authentication, database, or API, and no environment variables are required.
 
+Live app: https://gjensidige-omtanke.vercel.app
+
+Repository: https://github.com/JakobDenGode/gjensidige-omtanke
+
 ## Local Development
 
 Use Node.js 24 LTS and npm. With nvm installed:
@@ -30,11 +34,11 @@ To serve a production build locally, run `npm start` after building.
 
 ## Vercel Deployment
 
-Import `JakobDenGode/gjensidige-omtanke` at https://vercel.com/new.
-Use the Next.js preset, the repository root, and Node.js 24.x.
+The repository is connected to the `gjensidige-omtanke` Vercel project.
+It uses the Next.js preset, the repository root, and Node.js 24.x.
 No environment variables are needed.
 
-Once connected, Vercel deploys `main` to production and creates preview deployments
+Vercel deploys `main` to production and creates preview deployments
 for pull requests. The Vercel dashboard shows the assigned public URL.
 
 ## Scope
