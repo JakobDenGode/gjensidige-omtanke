@@ -14,11 +14,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    <html lang="nb">
       <body>
-        <header className="app-header">
-          <h1>Gjensidige Omtanke</h1>
-        </header>
         {children}
       </body>
     </html>
