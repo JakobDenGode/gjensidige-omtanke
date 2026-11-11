@@ -49,6 +49,17 @@ for pull requests. The Vercel dashboard shows the assigned public URL.
 
 ## Supabase Setup
 
+### User–Friend Connections
+
+Open "Tilkoblinger" in `/design`. A user creates a private invitation code and
+shares it with a friend, who signs into their own account and accepts it.
+Codes are single-use, expire after seven days, and are stored only as hashes.
+Creating a new code replaces the user's previous invitation. Invitations can be revoked.
+A user can connect to multiple friends; roles apply per relationship. Either
+participant can remove a connection with confirmation. Connections are visible
+only to their participants and do not grant access to requests or health data.
+Display names are supplied by participants, not verified identities.
+
 Dashboard: https://supabase.com/dashboard/project/fiobfnbeiqmdlffntxxv
 
 The project is in Stockholm under JakobDenGode's Org. Local connection settings

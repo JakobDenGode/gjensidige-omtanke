@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [audience, setAudience] = useState<"eldre" | "yngre">("eldre");
+  const [audience, setAudience] = useState<"user" | "friend">("user");
 
   return (
     <>
@@ -14,7 +14,7 @@ export default function Home() {
         <fieldset className="audience-toggle">
           <legend>Velg versjon</legend>
           <div className="audience-options">
-            {(["eldre", "yngre"] as const).map((version) => (
+            {(["user", "friend"] as const).map((version) => (
               <label className="audience-option" key={version}>
                 <input
                   type="radio"
@@ -23,17 +23,17 @@ export default function Home() {
                   checked={audience === version}
                   onChange={() => setAudience(version)}
                 />
-                <span>{version === "eldre" ? "Eldre" : "Yngre"}</span>
+                <span>{version === "user" ? "Bruker" : "Venn"}</span>
               </label>
             ))}
           </div>
         </fieldset>
-        {audience === "eldre" && (
-          <div className="elder-actions">
-            <button type="button" className="elder-button elder-button-red">
+        {audience === "user" && (
+          <div className="user-actions">
+            <button type="button" className="user-button user-button-red">
               R&oslash;d knapp
             </button>
-            <button type="button" className="elder-button elder-button-green">
+            <button type="button" className="user-button user-button-green">
               Gr&oslash;nn knapp
             </button>
           </div>

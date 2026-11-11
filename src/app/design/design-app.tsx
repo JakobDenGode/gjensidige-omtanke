@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AccountMenu, useAccount } from "./account";
+import Connections from "./connections";
 
 const icons = {
   arrow: "M4 12h16m-6-6 6 6-6 6",
@@ -119,34 +120,12 @@ const info = {
 };
 type InfoKey = keyof typeof info;
 type Page = "home" | "appointments" | "health" | "services" | "friends";
-type Modal =
-  | "flow"
-  | "info"
-  | "friend"
-  | "remove"
-  | "voice"
-  | "voice-purpose"
-  | "complete"
-  | null;
+type Modal = "flow" | "info" | "voice" | "voice-purpose" | "complete" | null;
 const navigation: { page: Page; label: string; icon: IconName }[] = [
   { page: "home", label: "Hjem", icon: "home" },
   { page: "appointments", label: "Mine avtaler", icon: "calendar" },
   { page: "health", label: "Lege og psykolog", icon: "health" },
-  { page: "friends", label: "Mine venner", icon: "friends" },
-];
-const initialFriends = [
-  {
-    id: "ingrid",
-    name: "Ingrid",
-    relation: "Datter",
-    permissions: ["Se hverdagsavtaler", "Se og lage forespørsler"],
-  },
-  {
-    id: "lars",
-    name: "Lars",
-    relation: "Sønn",
-    permissions: ["Se hverdagsavtaler"],
-  },
+  { page: "friends", label: "Tilkoblinger", icon: "friends" },
 ];
 
 export default function DesignApp() {
@@ -163,9 +142,6 @@ export default function DesignApp() {
   const [timing, setTiming] = useState("Denne uken");
   const [description, setDescription] = useState("");
   const [infoKey, setInfoKey] = useState<InfoKey>("support");
-  const [friends, setFriends] = useState(initialFriends);
-  const [friendId, setFriendId] = useState("ingrid");
-  const [status, setStatus] = useState("");
   const [voiceText, setVoiceText] = useState("");
   const [voiceTarget, setVoiceTarget] = useState<"new" | "details">("new");
   const [voiceSimulated, setVoiceSimulated] = useState(false);
@@ -173,7 +149,6 @@ export default function DesignApp() {
   const heading = useRef<HTMLHeadingElement>(null);
   const pageHeading = useRef<HTMLHeadingElement>(null);
   const isOpen = modal !== null;
-  const friend = friends.find((item) => item.id === friendId);
 
   useEffect(() => {
     const element = dialog.current;
@@ -271,7 +246,7 @@ export default function DesignApp() {
     appointments: ["Alt på ett sted", "Mine avtaler"],
     health: ["Profesjonelle helsetjenester", "Lege og psykolog"],
     services: ["Betalte tjenester", "Hus og hjem"],
-    friends: ["Familie og pårørende", "Mine venner"],
+    friends: ["Brukere og venner", "Mine tilkoblinger"],
   };
 
   let modalTitle = "";
@@ -289,8 +264,6 @@ export default function DesignApp() {
             ? "Når passer det?"
             : "Ser dette riktig ut?";
   if (modal === "info") modalTitle = info[infoKey].title;
-  if (modal === "friend") modalTitle = friend?.name ?? "Mine venner";
-  if (modal === "remove") modalTitle = "Fjerne tilgangen?";
   if (modal === "voice") modalTitle = "Si det med egne ord";
   if (modal === "voice-purpose") modalTitle = "Hva vil du bruke teksten til?";
   if (modal === "complete") modalTitle = "Lagret på kontoen din";
@@ -346,7 +319,6 @@ export default function DesignApp() {
             {titles[page][1]}
           </h1>
           {page === "appointments" && <p>Her finner du det dere har avtalt.</p>}
-          {page === "friends" && <p>Disse har tilgang til profilen din.</p>}
         </div>
 
         {page === "home" && (
@@ -441,60 +413,12 @@ export default function DesignApp() {
             </p>
           </>
         )}
-        {page === "friends" && (
-          <>
-            <div className="friends-grid">
-              {friends.map((person) => (
-                <button
-                  key={person.id}
-                  className="friend-card"
-                  onClick={() => {
-                    setFriendId(person.id);
-                    setModal("friend");
-                  }}
-                >
-                  <span className="person">
-                    <span className="avatar" aria-hidden="true">
-                      {person.name[0]}
-                    </span>
-                    <span>
-                      <span className="card-title">{person.name}</span>
-                      <small>{person.relation}</small>
-                    </span>
-                  </span>
-                  <span className="tag">Har tilgang</span>
-                  <span className="friend-access">
-                    <Icon name="calendar" />
-                    Kan se hverdagsavtaler
-                  </span>
-                  <span className="card-cta">
-                    Se tilgang
-                    <Icon name="arrow" />
-                  </span>
-                </button>
-              ))}
-            </div>
-            {!friends.length && (
-              <p className="privacy">
-                Ingen andre har tilgang til profilen din.
-              </p>
-            )}
-            <p className="privacy">
-              <Icon name="lock" />
-              Du bestemmer. Helseopplysninger deles ikke.
-            </p>
-            <p role="status">{status}</p>
-            <p className="note">
-              Eksempeltilganger. Ingen ekte profiler eller rettigheter endres i
-              skissen.
-            </p>
-          </>
-        )}
+        {page === "friends" && <Connections />}
         <footer className="design-footer">
           <span>Gjensidige · En god hverdag</span>
           <button className="text-button" onClick={() => navigate("friends")}>
             <Icon name="friends" />
-            Mine venner
+            Tilkoblinger
           </button>
         </footer>
       </main>
@@ -743,63 +667,6 @@ export default function DesignApp() {
               <button className="button outline" onClick={closeModal}>
                 Lukk
               </button>
-            </>
-          )}
-          {modal === "friend" && friend && (
-            <>
-              <p>{friend.relation} · Har tilgang</p>
-              <ul className="permissions">
-                {friend.permissions.map((permission) => (
-                  <li key={permission}>
-                    <Icon name="check" />
-                    {permission}
-                  </li>
-                ))}
-              </ul>
-              <p className="privacy">
-                <Icon name="lock" />
-                Ingen tilgang til helseopplysninger.
-              </p>
-              <div className="dialog-actions">
-                <button className="text-button" onClick={closeModal}>
-                  Tilbake
-                </button>
-                <button
-                  className="button danger"
-                  onClick={() => setModal("remove")}
-                >
-                  Fjern tilgang
-                </button>
-              </div>
-            </>
-          )}
-          {modal === "remove" && friend && (
-            <>
-              <p>
-                {friend.name} mister tilgangen til hverdagsavtaler og
-                forespørsler.
-              </p>
-              <p className="note">Gjelder bare eksempelprofilen i skissen.</p>
-              <div className="dialog-actions">
-                <button
-                  className="button outline"
-                  onClick={() => setModal("friend")}
-                >
-                  Behold tilgang
-                </button>
-                <button
-                  className="button danger"
-                  onClick={() => {
-                    setFriends(friends.filter((item) => item.id !== friend.id));
-                    setStatus(
-                      `Tilgangen til ${friend.name} er fjernet i skissen.`,
-                    );
-                    setModal(null);
-                  }}
-                >
-                  Ja, fjern tilgang
-                </button>
-              </div>
             </>
           )}
           {modal === "voice" && (

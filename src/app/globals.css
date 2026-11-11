@@ -119,14 +119,14 @@ body {
   text-decoration: underline;
 }
 
-.elder-actions {
+.user-actions {
   display: grid;
   gap: var(--builders-unit-20);
   max-width: var(--builders-container-md);
   margin-block-start: var(--builders-unit-50);
 }
 
-.elder-button {
+.user-button {
   min-block-size: var(--builders-unit-60);
   padding: var(--builders-unit-20);
   border: 0;
@@ -136,19 +136,19 @@ body {
   cursor: pointer;
 }
 
-.elder-button-red {
+.user-button-red {
   background: var(--builders-color-error-300);
 }
 
-.elder-button-green {
+.user-button-green {
   background: var(--builders-color-success-300);
 }
 
-.elder-button:hover {
+.user-button:hover {
   text-decoration: underline;
 }
 
-.elder-button:focus-visible {
+.user-button:focus-visible {
   outline: 2px solid var(--builders-color-purple-700);
   outline-offset: 2px;
 }

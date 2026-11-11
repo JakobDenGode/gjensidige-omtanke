@@ -15,7 +15,8 @@
 - Supabase is explicitly approved for real persistence. Project: `fiobfnbeiqmdlffntxxv` (Stockholm).
 - Keep schema changes in `supabase/migrations`. Enable row-level security and restrict records to their authenticated owner; never allow anonymous public access to personal data.
 - Only public client keys may use `NEXT_PUBLIC_` variables. Never commit secrets, service-role keys, or database passwords.
-- `/design` email/password accounts and request/offer save/list/cancel flows use Supabase. Other services, appointments, family access, and voice entry remain prototypes; do not imply those are real integrations.
+- `/design` accounts, requests/offers, and user–friend connections use Supabase. Other services, appointments, and voice entry remain prototypes.
+- Use user/friend terminology (Bruker/Venn in Norwegian), not age-based labels. Connection roles are per relationship, not account-wide privileges. A user can have multiple friends. Connections do not automatically share requests or health information.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
