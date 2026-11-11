@@ -24,6 +24,16 @@ export default function Home() {
           ))}
         </div>
       </fieldset>
+      {audience === "eldre" && (
+        <div className="elder-actions">
+          <button type="button" className="elder-button elder-button-red">
+            R&oslash;d knapp
+          </button>
+          <button type="button" className="elder-button elder-button-green">
+            Gr&oslash;nn knapp
+          </button>
+        </div>
+      )}
     </main>
   );
 }

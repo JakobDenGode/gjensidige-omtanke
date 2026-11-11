@@ -20,6 +20,8 @@
   --builders-color-blue-700: #090c33;
   --builders-color-blue-100: #ebf0fa;
   --builders-color-purple-700: #6325e7;
+  --builders-color-error-300: #8c0008;
+  --builders-color-success-300: #00593e;
   --builders-radius-sm: 0.25rem;
   --builders-unit-10: 0.5rem;
   --builders-unit-20: 1rem;
@@ -115,6 +117,40 @@ body {
 
 .audience-option:hover span {
   text-decoration: underline;
+}
+
+.elder-actions {
+  display: grid;
+  gap: var(--builders-unit-20);
+  max-width: var(--builders-container-md);
+  margin-block-start: var(--builders-unit-50);
+}
+
+.elder-button {
+  min-block-size: var(--builders-unit-60);
+  padding: var(--builders-unit-20);
+  border: 0;
+  border-radius: var(--builders-radius-sm);
+  color: var(--builders-color-white);
+  font: inherit;
+  cursor: pointer;
+}
+
+.elder-button-red {
+  background: var(--builders-color-error-300);
+}
+
+.elder-button-green {
+  background: var(--builders-color-success-300);
+}
+
+.elder-button:hover {
+  text-decoration: underline;
+}
+
+.elder-button:focus-visible {
+  outline: 2px solid var(--builders-color-purple-700);
+  outline-offset: 2px;
 }
 
 @media (forced-colors: active) {
