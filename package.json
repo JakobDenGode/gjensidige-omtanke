@@ -13,9 +13,6 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@gjensidige/builders-components": "^2.15.0",
-    "@gjensidige/builders-fonts": "^2.3.1",
-    "@gjensidige/builders-tokens": "^2.4.1",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0"

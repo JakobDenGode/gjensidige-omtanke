@@ -1,3 +1,29 @@
+"use client";
+
+import { useState } from "react";
+
 export default function Home() {
-  return <main />;
+  const [audience, setAudience] = useState<"eldre" | "yngre">("eldre");
+
+  return (
+    <main className="app-content" data-audience={audience}>
+      <fieldset className="audience-toggle">
+        <legend>Velg versjon</legend>
+        <div className="audience-options">
+          {(["eldre", "yngre"] as const).map((version) => (
+            <label className="audience-option" key={version}>
+              <input
+                type="radio"
+                name="audience"
+                value={version}
+                checked={audience === version}
+                onChange={() => setAudience(version)}
+              />
+              <span>{version === "eldre" ? "Eldre" : "Yngre"}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    </main>
+  );
 }

@@ -1,9 +1,133 @@
+@font-face {
+  font-family: "GjensidigeDisplay";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeDisplay-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GjensidigeSans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeSans-Regular.woff2") format("woff2");
+}
+
+/* Local Builders reference values for the styles this app uses. */
+:root {
+  --builders-color-white: #ffffff;
+  --builders-color-blue-700: #090c33;
+  --builders-color-blue-100: #ebf0fa;
+  --builders-color-purple-700: #6325e7;
+  --builders-radius-sm: 0.25rem;
+  --builders-unit-10: 0.5rem;
+  --builders-unit-20: 1rem;
+  --builders-unit-60: 3rem;
+  --builders-container-xxl: 90rem;
+  --builders-container-md: 43.75rem;
+  --builders-font-display: "GjensidigeDisplay", "GjensidigeSans", Helvetica, Arial, sans-serif;
+  --builders-font-sans: "GjensidigeSans", Helvetica, Arial, sans-serif;
+  --builders-font-md: clamp(1rem, calc(0.901rem + 0.345vw), 1.25rem);
+  --builders-font-title-2: clamp(2.5rem, calc(2.103rem + 1.379vw), 3.5rem);
+  --builders-font-weight-400: 400;
+  --builders-line-height-120: 1.2;
+  --builders-line-height-150: 1.5;
+  --builders-unit-25: 1.25rem;
+  --builders-unit-50: 2.5rem;
+}
+
 body {
   margin: 0;
   color: var(--builders-color-blue-700);
   background: var(--builders-color-white);
+  font-family: var(--builders-font-sans);
+  font-size: var(--builders-font-md);
+  font-weight: var(--builders-font-weight-400);
+  line-height: var(--builders-line-height-150);
 }
 
-.app-header {
+.app-header,
+.app-content {
+  box-sizing: border-box;
+  max-width: var(--builders-container-xxl);
+  margin-inline: auto;
   padding-block: var(--builders-unit-50);
+  padding-inline: var(--builders-unit-25);
+}
+
+.app-content {
+  padding-block-start: 0;
+}
+
+.audience-toggle {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.audience-toggle legend {
+  margin-block-end: var(--builders-unit-20);
+  padding: 0;
+}
+
+.audience-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: var(--builders-container-md);
+  gap: var(--builders-unit-10);
+  padding: var(--builders-unit-10);
+  border-radius: var(--builders-radius-sm);
+  background: var(--builders-color-blue-100);
+}
+
+.audience-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.audience-option input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
+
+.audience-option span {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-block-size: var(--builders-unit-60);
+  padding: var(--builders-unit-10) var(--builders-unit-20);
+  border-radius: var(--builders-radius-sm);
+}
+
+.audience-option input:checked + span {
+  color: var(--builders-color-white);
+  background: var(--builders-color-blue-700);
+}
+
+.audience-option input:focus-visible + span {
+  outline: 2px solid var(--builders-color-purple-700);
+  outline-offset: 2px;
+}
+
+.audience-option:hover span {
+  text-decoration: underline;
+}
+
+@media (forced-colors: active) {
+  .audience-option input:checked + span {
+    outline: 2px solid Highlight;
+  }
+}
+
+.app-header h1 {
+  margin: 0;
+  font-family: var(--builders-font-display);
+  font-size: var(--builders-font-title-2);
+  font-weight: var(--builders-font-weight-400);
+  line-height: var(--builders-line-height-120);
+  overflow-wrap: anywhere;
 }

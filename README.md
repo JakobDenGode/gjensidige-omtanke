@@ -1,8 +1,11 @@
 # Gjensidige Omtanke
 
 A minimal Next.js App Router application with TypeScript and ESLint.
-The homepage displays "Gjensidige Omtanke" using the official Builders components,
-Gjensidige Display heading font, Gjensidige Sans body font, and design tokens.
+The homepage displays "Gjensidige Omtanke" with lightweight local styles matching
+[Gjensidige Builders](https://www.gjensidige.builders/docs/core/?path=/docs/get-started--about).
+It loads Gjensidige Display and Sans from the public Gjensidige CDN, with no
+Builders npm packages or analytics dependencies. Future functionality is mocked
+with local data until real integrations are explicitly requested; see `AGENTS.md`.
 There is no authentication, database, or API, and no environment variables are required.
 
 Live app: https://gjensidige-omtanke.vercel.app
