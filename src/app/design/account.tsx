@@ -34,6 +34,58 @@ export function useAccount() {
   return account;
 }
 
+export function AccountMenu() {
+  const { user } = useAccount();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  return (
+    <div className="account-menu">
+      <button className="account-menu-trigger" popoverTarget="account-dropdown">
+        Min konto <span aria-hidden="true">&#9662;</span>
+      </button>
+      <div id="account-dropdown" className="account-dropdown" popover="auto">
+        <h2>Din konto</h2>
+        <p className="account-email">{user?.email}</p>
+        <a
+          href="#requests-title"
+          onClick={(event) => {
+            event.currentTarget
+              .closest<HTMLElement>("[popover]")
+              ?.hidePopover();
+            document.getElementById("requests-title")?.focus();
+          }}
+        >
+          Mine forespørsler og tilbud
+        </a>
+        <button
+          className="button outline"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setError("");
+            try {
+              const { error } = await createSupabaseClient().auth.signOut();
+              if (error) throw error;
+            } catch {
+              setError("Kunne ikke logge ut. Prøv igjen.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? "Logger ut …" : "Logg ut"}
+        </button>
+        {error && (
+          <p role="alert" className="account-error">
+            {error}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Account({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const configured = Boolean(
@@ -60,6 +112,7 @@ export default function Account({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       setUser(session?.user ?? null);
+      if (!session) setRequests([]);
       setReady(true);
     });
     return () => {
@@ -142,203 +195,209 @@ export default function Account({ children }: { children: ReactNode }) {
 
   return (
     <AccountContext.Provider value={{ user, saveRequest }}>
-      <section className="account-panel" aria-labelledby="account-title">
-        <h2 id="account-title">
-          {user ? "Din konto" : "Logg inn for å lagre"}
-        </h2>
-        {!ready ? (
-          <p role="status">Laster konto …</p>
-        ) : !configured ? (
-          <p role="alert">
-            Supabase er ikke konfigurert. Legg til miljøvariablene før du logger
-            inn.
-          </p>
-        ) : user ? (
-          <>
-            <p>Logget inn som {user.email}</p>
-            <button
-              className="button outline"
-              disabled={busy}
-              onClick={async () => {
-                setBusy(true);
-                setError("");
-                try {
-                  const { error } = await createSupabaseClient().auth.signOut();
-                  if (error) throw error;
-                  setRequests([]);
-                  setMessage("");
-                } catch {
-                  setError("Kunne ikke logge ut. Prøv igjen.");
-                } finally {
-                  setBusy(false);
-                }
-              }}
+      {!ready || !user ? (
+        <>
+          <header className="design-header">
+            <div className="header-inner">
+              <span className="brand">Gjensidige Omtanke</span>
+            </div>
+          </header>
+          <main className="login-page">
+            <section className="account-panel" aria-labelledby="account-title">
+              <p className="eyebrow">En god hverdag</p>
+              <h1 id="account-title">
+                {authMode === "signup" ? "Opprett konto" : "Velkommen tilbake"}
+              </h1>
+              <p>
+                Logg inn for å bruke tjenesten og se dine forespørsler og
+                tilbud.
+              </p>
+              {!ready ? (
+                <p role="status">Laster konto …</p>
+              ) : !configured ? (
+                <p role="alert">
+                  Supabase er ikke konfigurert. Legg til miljøvariablene før du
+                  logger inn.
+                </p>
+              ) : (
+                <form
+                  className="account-form"
+                  onSubmit={async (event) => {
+                    event.preventDefault();
+                    if (busy) return;
+                    const form = event.currentTarget;
+                    const fields = new FormData(form);
+                    const email = String(fields.get("email")).trim();
+                    const password = String(fields.get("password"));
+                    setBusy(true);
+                    setError("");
+                    setMessage("");
+                    try {
+                      const supabase = createSupabaseClient();
+                      const result =
+                        authMode === "signup"
+                          ? await supabase.auth.signUp({
+                              email,
+                              password,
+                              options: {
+                                emailRedirectTo: `${window.location.origin}/design`,
+                              },
+                            })
+                          : await supabase.auth.signInWithPassword({
+                              email,
+                              password,
+                            });
+                      if (result.error) throw result.error;
+                      form.reset();
+                      if (authMode === "signup" && !result.data.session)
+                        setMessage(
+                          "Sjekk e-posten din for å bekrefte kontoen. Logg deretter inn her. Hvis adressen allerede er registrert, kan du logge inn.",
+                        );
+                    } catch {
+                      setError(
+                        authMode === "signup"
+                          ? "Kunne ikke opprette konto. Bruk en gyldig e-post og minst 8 tegn i passordet. Prøv igjen senere hvis du har gjort mange forsøk."
+                          : "Kunne ikke logge inn. Kontroller e-post, passord og at e-posten er bekreftet.",
+                      );
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  <label htmlFor="account-email">E-post</label>
+                  <input
+                    id="account-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    maxLength={254}
+                    required
+                    disabled={busy}
+                  />
+                  <label htmlFor="account-password">
+                    Passord{authMode === "signup" ? " (minst 8 tegn)" : ""}
+                  </label>
+                  <input
+                    id="account-password"
+                    name="password"
+                    type="password"
+                    autoComplete={
+                      authMode === "signup"
+                        ? "new-password"
+                        : "current-password"
+                    }
+                    minLength={authMode === "signup" ? 8 : undefined}
+                    required
+                    disabled={busy}
+                  />
+                  <button className="button primary" disabled={busy}>
+                    {busy
+                      ? "Vennligst vent …"
+                      : authMode === "signup"
+                        ? "Opprett konto"
+                        : "Logg inn"}
+                  </button>
+                  <button
+                    type="button"
+                    className="text-button"
+                    disabled={busy}
+                    onClick={() => {
+                      setAuthMode(authMode === "signin" ? "signup" : "signin");
+                      setError("");
+                      setMessage("");
+                    }}
+                  >
+                    {authMode === "signin"
+                      ? "Ny her? Opprett konto"
+                      : "Har du konto? Logg inn"}
+                  </button>
+                </form>
+              )}
+              {error && (
+                <p role="alert" className="account-error">
+                  {error}
+                </p>
+              )}
+              {message && <p role="status">{message}</p>}
+            </section>
+          </main>
+        </>
+      ) : (
+        <>
+          {children}
+          {user && (
+            <section
+              className="saved-requests"
+              aria-labelledby="requests-title"
             >
-              Logg ut
-            </button>
-          </>
-        ) : (
-          <form
-            className="account-form"
-            onSubmit={async (event) => {
-              event.preventDefault();
-              if (busy) return;
-              const form = event.currentTarget;
-              const fields = new FormData(form);
-              const email = String(fields.get("email")).trim();
-              const password = String(fields.get("password"));
-              setBusy(true);
-              setError("");
-              setMessage("");
-              try {
-                const supabase = createSupabaseClient();
-                const result =
-                  authMode === "signup"
-                    ? await supabase.auth.signUp({
-                        email,
-                        password,
-                        options: {
-                          emailRedirectTo: `${window.location.origin}/design`,
-                        },
-                      })
-                    : await supabase.auth.signInWithPassword({
-                        email,
-                        password,
-                      });
-                if (result.error) throw result.error;
-                form.reset();
-                if (authMode === "signup" && !result.data.session)
-                  setMessage(
-                    "Sjekk e-posten din for å bekrefte kontoen. Logg deretter inn her. Hvis adressen allerede er registrert, kan du logge inn.",
-                  );
-              } catch {
-                setError(
-                  authMode === "signup"
-                    ? "Kunne ikke opprette konto. Bruk en gyldig e-post og minst 8 tegn i passordet. Prøv igjen senere hvis du har gjort mange forsøk."
-                    : "Kunne ikke logge inn. Kontroller e-post, passord og at e-posten er bekreftet.",
-                );
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            <label htmlFor="account-email">E-post</label>
-            <input
-              id="account-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              maxLength={254}
-              required
-              disabled={busy}
-            />
-            <label htmlFor="account-password">
-              Passord{authMode === "signup" ? " (minst 8 tegn)" : ""}
-            </label>
-            <input
-              id="account-password"
-              name="password"
-              type="password"
-              autoComplete={
-                authMode === "signup" ? "new-password" : "current-password"
-              }
-              minLength={authMode === "signup" ? 8 : undefined}
-              required
-              disabled={busy}
-            />
-            <button className="button primary" disabled={busy}>
-              {busy
-                ? "Vennligst vent …"
-                : authMode === "signup"
-                  ? "Opprett konto"
-                  : "Logg inn"}
-            </button>
-            <button
-              type="button"
-              className="text-button"
-              disabled={busy}
-              onClick={() => {
-                setAuthMode(authMode === "signin" ? "signup" : "signin");
-                setError("");
-                setMessage("");
-              }}
-            >
-              {authMode === "signin"
-                ? "Ny her? Opprett konto"
-                : "Har du konto? Logg inn"}
-            </button>
-          </form>
-        )}
-        {error && (
-          <p role="alert" className="account-error">
-            {error}
-          </p>
-        )}
-        {message && <p role="status">{message}</p>}
-      </section>
-      {children}
-      {user && (
-        <section className="saved-requests" aria-labelledby="requests-title">
-          <h2 id="requests-title">Mine forespørsler og tilbud</h2>
-          <p className="note">
-            Disse er lagret på kontoen din. Ingen hjelper er tildelt og ingen
-            avtale er bestilt.
-          </p>
-          <button
-            className="text-button"
-            disabled={loading}
-            onClick={() => setRevision((value) => value + 1)}
-          >
-            Oppdater listen
-          </button>
-          {loading && <p role="status">Henter forespørsler …</p>}
-          {listError && (
-            <p role="alert" className="account-error">
-              {listError}
-            </p>
+              <h2 id="requests-title" tabIndex={-1}>
+                Mine forespørsler og tilbud
+              </h2>
+              <p className="note">
+                Disse er lagret på kontoen din. Ingen hjelper er tildelt og
+                ingen avtale er bestilt.
+              </p>
+              <button
+                className="text-button"
+                disabled={loading}
+                onClick={() => setRevision((value) => value + 1)}
+              >
+                Oppdater listen
+              </button>
+              {loading && <p role="status">Henter forespørsler …</p>}
+              {listError && (
+                <p role="alert" className="account-error">
+                  {listError}
+                </p>
+              )}
+              {!loading &&
+                !listError &&
+                !requests.some((request) => request.user_id === user.id) && (
+                  <p>Du har ingen lagrede forespørsler eller tilbud ennå.</p>
+                )}
+              <div className="request-list">
+                {requests
+                  .filter((request) => request.user_id === user.id)
+                  .map((request) => (
+                    <article className="request-record" key={request.id}>
+                      <span className="tag">
+                        {request.status === "cancelled" ? "Avbrutt" : "Åpen"}
+                      </span>
+                      <h3>{request.task}</h3>
+                      <p>
+                        {request.kind === "offer"
+                          ? "Jeg vil hjelpe"
+                          : "Jeg trenger hjelp"}{" "}
+                        · {request.timing}
+                      </p>
+                      {request.description && (
+                        <p className="request-description">
+                          {request.description}
+                        </p>
+                      )}
+                      <p className="note">
+                        Opprettet{" "}
+                        {new Date(request.created_at).toLocaleDateString(
+                          "nb-NO",
+                        )}
+                      </p>
+                      {request.status === "open" && (
+                        <button
+                          className="button outline"
+                          disabled={cancelling !== null}
+                          onClick={() => void cancelRequest(request.id)}
+                        >
+                          {cancelling === request.id
+                            ? "Avbryter …"
+                            : "Avbryt forespørsel"}
+                        </button>
+                      )}
+                    </article>
+                  ))}
+              </div>
+            </section>
           )}
-          {!loading &&
-            !listError &&
-            !requests.some((request) => request.user_id === user.id) && (
-              <p>Du har ingen lagrede forespørsler eller tilbud ennå.</p>
-            )}
-          <div className="request-list">
-            {requests
-              .filter((request) => request.user_id === user.id)
-              .map((request) => (
-                <article className="request-record" key={request.id}>
-                  <span className="tag">
-                    {request.status === "cancelled" ? "Avbrutt" : "Åpen"}
-                  </span>
-                  <h3>{request.task}</h3>
-                  <p>
-                    {request.kind === "offer"
-                      ? "Jeg vil hjelpe"
-                      : "Jeg trenger hjelp"}{" "}
-                    · {request.timing}
-                  </p>
-                  {request.description && (
-                    <p className="request-description">{request.description}</p>
-                  )}
-                  <p className="note">
-                    Opprettet{" "}
-                    {new Date(request.created_at).toLocaleDateString("nb-NO")}
-                  </p>
-                  {request.status === "open" && (
-                    <button
-                      className="button outline"
-                      disabled={cancelling !== null}
-                      onClick={() => void cancelRequest(request.id)}
-                    >
-                      {cancelling === request.id
-                        ? "Avbryter …"
-                        : "Avbryt forespørsel"}
-                    </button>
-                  )}
-                </article>
-              ))}
-          </div>
-        </section>
+        </>
       )}
     </AccountContext.Provider>
   );

@@ -18,8 +18,62 @@
 .design-app .saved-requests {
   padding-bottom: 13rem;
 }
-.design-app .account-panel {
-  border-bottom: 1px solid var(--design-line);
+.design-app .login-page {
+  max-width: 36rem;
+  margin: 3rem auto;
+  padding-inline: 1.25rem;
+}
+.design-app .login-page .account-panel {
+  padding: 0;
+}
+.design-app .login-page h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 1rem;
+}
+.design-app .account-menu-trigger {
+  background: var(--builders-color-blue-100);
+  border: 0;
+  border-radius: var(--builders-radius-sm);
+  padding: 0.5rem 1rem;
+  min-height: 3rem;
+  white-space: nowrap;
+  font-size: 1.125rem;
+}
+.design-app .account-dropdown {
+  position: fixed;
+  inset: auto;
+  top: 7rem;
+  right: max(1.25rem, calc((100vw - 72.5rem) / 2));
+  width: min(22rem, calc(100vw - 2.5rem));
+  padding: 1.5rem;
+  color: var(--builders-color-blue-700);
+  background: var(--builders-color-white);
+  border: 1px solid var(--design-line);
+  border-radius: var(--design-radius);
+  box-shadow: 0 0.5rem 2rem #090c3326;
+}
+.design-app .account-dropdown:popover-open {
+  display: grid;
+  gap: 1rem;
+}
+.design-app .account-dropdown h2 {
+  font-size: 1.5rem;
+}
+.design-app .account-email {
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+}
+@media (max-width: 1100px) {
+  .design-app .header-inner {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .design-app .account-menu {
+    margin-left: auto;
+  }
+  .design-app .account-dropdown {
+    top: 6rem;
+  }
 }
 .design-app .account-form {
   display: grid;

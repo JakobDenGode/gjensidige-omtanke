@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useAccount } from "./account";
+import { AccountMenu, useAccount } from "./account";
 
 const icons = {
   arrow: "M4 12h16m-6-6 6 6-6 6",
@@ -320,6 +320,7 @@ export default function DesignApp() {
               </button>
             ))}
           </nav>
+          <AccountMenu />
           <button
             className="support-button"
             onClick={() => showInfo("support")}

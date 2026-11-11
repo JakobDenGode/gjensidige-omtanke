@@ -58,6 +58,10 @@ The client factory is in `src/lib/supabase.ts`.
 Version-controlled migrations define `help_requests` for requests and offers.
 Authenticated users can create/read their own records and update their status.
 Anonymous access is denied. Sign up on `/design`, confirm your email, then sign in.
+Signed-out visitors see only the login/registration screen. The application is
+not mounted until the session is loaded and signed in. Account details and sign-out
+are available in the header's "Min konto" dropdown; Escape or an outside click
+closes it. Database row-level security remains the authorization boundary.
 Saved requests appear below the prototype and survive refreshes. Cancellation
 changes the saved status; it does not delete the record or book a real service.
 
