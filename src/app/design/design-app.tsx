@@ -2,8 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AccountMenu, useAccount } from "./account";
+import { AccountMenu, SavedRequests, useAccount } from "./account";
 import Connections from "./connections";
+import SpeechInput from "./speech-input";
+import {
+  ExampleAlerts,
+  ExampleDevices,
+  ExampleFriendView,
+  professionalGroups,
+  type ProfessionalKind,
+} from "./design-examples";
 
 const icons = {
   arrow: "M4 12h16m-6-6 6 6-6 6",
@@ -117,14 +125,31 @@ const info = {
     text: "Du får se pris og hva som inngår før bestilling.",
     note: "Tilbudet er ikke avklart. Ingen bestilling i skissen.",
   },
+  doctorAppointment: {
+    title: "Legetime",
+    text: "Fredag 20. november kl. 14.00. Med lege Maria. Legen ringer deg.",
+    note: "Eksempelavtale. Ingen legetime er bestilt. Ikke delt med venner.",
+  },
+  security: {
+    title: "Gjør hjemmet tryggere",
+    text: "Lås dører og vinduer. Bruk lys når du er borte. Avtal med noen du kjenner å se til boligen.",
+    note: "Ved pågående innbrudd eller akutt fare: ring 112. Dette er et eksempel, ikke et reelt varsel om ditt område.",
+  },
 };
 type InfoKey = keyof typeof info;
-type Page = "home" | "appointments" | "health" | "services" | "friends";
-type Modal = "flow" | "info" | "voice" | "voice-purpose" | "complete" | null;
+type Page =
+  | "home"
+  | "appointments"
+  | "health"
+  | "services"
+  | "friends"
+  | "devices"
+  | "preview";
+type Modal =
+  "page" | "flow" | "info" | "voice" | "voice-purpose" | "complete" | null;
 const navigation: { page: Page; label: string; icon: IconName }[] = [
   { page: "home", label: "Hjem", icon: "home" },
   { page: "appointments", label: "Mine avtaler", icon: "calendar" },
-  { page: "health", label: "Lege og psykolog", icon: "health" },
   { page: "friends", label: "Tilkoblinger", icon: "friends" },
 ];
 
@@ -136,6 +161,9 @@ export default function DesignApp() {
   const [page, setPage] = useState<Page>("home");
   const [modal, setModal] = useState<Modal>(null);
   const [mode, setMode] = useState<"request" | "offer">("request");
+  const [professional, setProfessional] = useState<ProfessionalKind | null>(
+    null,
+  );
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState(groups[0]);
   const [task, setTask] = useState("");
@@ -144,7 +172,8 @@ export default function DesignApp() {
   const [infoKey, setInfoKey] = useState<InfoKey>("support");
   const [voiceText, setVoiceText] = useState("");
   const [voiceTarget, setVoiceTarget] = useState<"new" | "details">("new");
-  const [voiceSimulated, setVoiceSimulated] = useState(false);
+  const [exampleComplete, setExampleComplete] = useState(false);
+  const [parents, setParents] = useState<Page[]>([]);
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const pageHeading = useRef<HTMLHeadingElement>(null);
@@ -164,18 +193,23 @@ export default function DesignApp() {
 
   useEffect(() => {
     if (modal) heading.current?.focus();
-  }, [modal, step]);
+  }, [modal, step, page]);
 
   useEffect(() => {
-    pageHeading.current?.focus();
-  }, [page]);
+    if (!modal) pageHeading.current?.focus();
+  }, [page, modal]);
 
   function navigate(next: Page) {
+    setParents([]);
     setPage(next);
-    window.scrollTo({ top: 0 });
+    setModal(next === "home" ? null : "page");
+    if (next === "home") window.scrollTo({ top: 0 });
   }
 
   function startFlow(nextMode: "request" | "offer", draft = "") {
+    if (modal === "page") setParents((current) => [...current, page]);
+    setProfessional(null);
+    setExampleComplete(false);
     setSaveError("");
     setMode(nextMode);
     setTask("");
@@ -186,6 +220,7 @@ export default function DesignApp() {
   }
 
   function showInfo(key: InfoKey) {
+    if (modal === "page") setParents((current) => [...current, page]);
     setInfoKey(key);
     setModal("info");
   }
@@ -193,14 +228,38 @@ export default function DesignApp() {
   function openVoice(target: "new" | "details") {
     setVoiceTarget(target);
     setVoiceText(target === "details" ? description : "");
-    setVoiceSimulated(false);
     setModal("voice");
   }
 
   function closeModal() {
     if (savingLock.current) return;
     if (modal === "voice" && voiceTarget === "details") setModal("flow");
-    else setModal(null);
+    else if (parents.length) {
+      setPage(parents[parents.length - 1]);
+      setParents((current) => current.slice(0, -1));
+      setModal("page");
+    } else {
+      setPage("home");
+      setModal(null);
+    }
+  }
+
+  function startProfessional(kind: ProfessionalKind) {
+    setProfessional(kind);
+    setMode("request");
+    setCategory({
+      name: professionalGroups[kind].name,
+      icon: "home",
+      tasks: professionalGroups[kind].tasks,
+    });
+    setTask(professionalGroups[kind].tasks[0]);
+    setDescription("");
+    setTiming("Så snart som mulig");
+    setSaveError("");
+    setExampleComplete(false);
+    setParents([]);
+    setStep(2);
+    setModal("flow");
   }
 
   function appointmentCard() {
@@ -209,7 +268,7 @@ export default function DesignApp() {
         className="appointment-card"
         onClick={() => showInfo("appointment")}
       >
-        <span className="tag">Avtalt</span>
+        <span className="tag">Eksempel · Avtalt</span>
         <span className="appointment-date">
           Torsdag 19. november · kl. 12.00
         </span>
@@ -247,6 +306,8 @@ export default function DesignApp() {
     health: ["Profesjonelle helsetjenester", "Lege og psykolog"],
     services: ["Betalte tjenester", "Hus og hjem"],
     friends: ["Brukere og venner", "Mine tilkoblinger"],
+    devices: ["Tilknyttet sensorikk", "Smarte produkter"],
+    preview: ["Eksempel på delt profil", "Se som venn"],
   };
 
   let modalTitle = "";
@@ -266,7 +327,13 @@ export default function DesignApp() {
   if (modal === "info") modalTitle = info[infoKey].title;
   if (modal === "voice") modalTitle = "Si det med egne ord";
   if (modal === "voice-purpose") modalTitle = "Hva vil du bruke teksten til?";
-  if (modal === "complete") modalTitle = "Lagret på kontoen din";
+  if (modal === "complete")
+    modalTitle = exampleComplete
+      ? "Demonstrasjon fullført"
+      : "Lagret på kontoen din";
+  if (modal === "page") modalTitle = titles[page][1];
+  if (modal === "flow" && professional && step === 2)
+    modalTitle = professionalGroups[professional].title;
 
   return (
     <div className="design-app">
@@ -293,7 +360,13 @@ export default function DesignApp() {
               </button>
             ))}
           </nav>
-          <AccountMenu />
+          <AccountMenu
+            onRequests={() => navigate("appointments")}
+            onConnections={() => navigate("friends")}
+            onDevices={() => navigate("devices")}
+            onHealth={() => navigate("health")}
+            onServices={() => navigate("services")}
+          />
           <button
             className="support-button"
             onClick={() => showInfo("support")}
@@ -305,115 +378,58 @@ export default function DesignApp() {
       </header>
 
       <main id="design-main" className="design-main">
-        {page === "services" && (
-          <button
-            className="text-button back-home"
-            onClick={() => navigate("home")}
-          >
-            Tilbake til hjem
-          </button>
-        )}
+        <ExampleAlerts
+          onHelp={startProfessional}
+          onSecurity={() => showInfo("security")}
+        />
         <div className="intro">
-          <p className="eyebrow">{titles[page][0]}</p>
           <h1 ref={pageHeading} tabIndex={-1}>
-            {titles[page][1]}
+            Er det noe du trenger hjelp til?
           </h1>
-          {page === "appointments" && <p>Her finner du det dere har avtalt.</p>}
         </div>
 
-        {page === "home" && (
-          <div className="home-layout">
-            <div>
-              <div className="action-grid">
-                <button
-                  className="action-card request-card"
-                  onClick={() => startFlow("request")}
-                >
-                  <span className="icon-circle">
-                    <Icon name="help" />
-                  </span>
-                  <span className="card-title">Jeg trenger hjelp</span>
-                  <Icon name="arrow" />
-                </button>
-                <button
-                  className="action-card offer-card"
-                  onClick={() => startFlow("offer")}
-                >
-                  <span className="icon-circle">
-                    <Icon name="heart" />
-                  </span>
-                  <span className="card-title">Jeg vil hjelpe</span>
-                  <Icon name="arrow" />
-                </button>
-              </div>
-              {task && (
-                <button
-                  className="text-button"
-                  onClick={() => setModal("flow")}
-                >
-                  Fortsett med utkastet ditt
-                </button>
-              )}
-              {service("Lege og psykolog", "health", () => navigate("health"))}
-              {service("Håndverker og hjemmetjenester", "tools", () =>
-                navigate("services"),
-              )}
+        <div className="home-layout">
+          <div>
+            <div className="action-grid">
+              <button
+                className="action-card request-card"
+                onClick={() => startFlow("request")}
+              >
+                <span className="icon-circle">
+                  <Icon name="help" />
+                </span>
+                <span className="card-title">Jeg trenger hjelp</span>
+                <Icon name="arrow" />
+              </button>
+              <button
+                className="action-card offer-card"
+                onClick={() => startFlow("offer")}
+              >
+                <span className="icon-circle">
+                  <Icon name="heart" />
+                </span>
+                <span className="card-title">Jeg kan hjelpe</span>
+                <Icon name="arrow" />
+              </button>
+              <button
+                className="action-card appointment-action"
+                onClick={() => navigate("appointments")}
+              >
+                <span className="icon-circle">
+                  <Icon name="calendar" />
+                </span>
+                <span className="card-title">Mine avtaler</span>
+                <Icon name="arrow" />
+              </button>
             </div>
-            <aside>
-              <div className="aside-title">
-                <h2>Eksempel på avtale</h2>
-                <span className="count">1</span>
-              </div>
-              {appointmentCard()}
-              <div className="support-box">
-                <h3>Vi hjelper deg i gang</h3>
-                <button
-                  className="text-button"
-                  onClick={() => showInfo("support")}
-                >
-                  <Icon name="phone" />
-                  Snakk med oss
-                </button>
-              </div>
-            </aside>
+            {task && (
+              <button className="text-button" onClick={() => setModal("flow")}>
+                Fortsett med utkastet ditt
+              </button>
+            )}
           </div>
-        )}
+        </div>
 
-        {page === "appointments" && (
-          <div className="single-appointment">{appointmentCard()}</div>
-        )}
-        {page === "health" && (
-          <>
-            <div className="service-grid">
-              {service("Lege", "health", () => showInfo("doctor"))}
-              {service("Psykolog", "heart", () => showInfo("psychologist"))}
-            </div>
-            <p className="note">
-              Ikke for akutt hjelp. Ring <a href="tel:113">113</a> ved fare for
-              liv og helse. Legevakt: <a href="tel:116117">116 117</a>.
-            </p>
-          </>
-        )}
-        {page === "services" && (
-          <>
-            <div className="service-grid">
-              {service("Rørlegger og elektriker", "tools", () =>
-                showInfo("technical"),
-              )}
-              {service("Snekker og vedlikehold", "home", () =>
-                showInfo("maintenance"),
-              )}
-              {service("Rengjøring og hage", "plant", () =>
-                showInfo("housekeeping"),
-              )}
-            </div>
-            <p className="note">
-              Du får se tilbyder, pris eller prisberegning og vilkår før
-              bestilling. Kun en skisse, ingen bestilling gjennomføres.
-            </p>
-          </>
-        )}
-        {page === "friends" && <Connections />}
         <footer className="design-footer">
           <span>Gjensidige · En god hverdag</span>
           <button className="text-button" onClick={() => navigate("friends")}>
@@ -437,11 +453,14 @@ export default function DesignApp() {
         {navigation.map((item) => (
           <button
             key={item.page}
-            aria-current={page === item.page ? "page" : undefined}
+            aria-current={
+              (modal ? page : "home") === item.page ? "page" : undefined
+            }
+            aria-haspopup={item.page === "home" ? undefined : "dialog"}
             onClick={() => navigate(item.page)}
           >
             <Icon name={item.icon} />
-            {item.page === "health" ? "Helse" : item.label}
+            {item.label}
           </button>
         ))}
       </nav>
@@ -462,9 +481,11 @@ export default function DesignApp() {
           <div className="dialog-top">
             <span>
               {modal === "flow"
-                ? `Steg ${step} av 4`
+                ? professional
+                  ? `Steg ${step - 1} av 3 · Eksempel`
+                  : `Steg ${step} av 4`
                 : modal === "voice" || modal === "voice-purpose"
-                  ? "Tale til tekst · simulering"
+                  ? "Tale til tekst"
                   : "En god hverdag"}
             </span>
             <button
@@ -483,6 +504,75 @@ export default function DesignApp() {
           <h2 id="design-dialog-title" ref={heading} tabIndex={-1}>
             {modalTitle}
           </h2>
+          {modal === "page" && (
+            <>
+              <p className="eyebrow">{titles[page][0]}</p>
+              {page === "appointments" && (
+                <>
+                  <SavedRequests />
+                  <h3 className="example-section-title">
+                    Eksempelavtaler – ikke bestilte timer
+                  </h3>
+                  <div className="service-grid">
+                    {appointmentCard()}
+                    {service("Legetime · Eksempel", "health", () =>
+                      showInfo("doctorAppointment"),
+                    )}
+                  </div>
+                </>
+              )}
+              {page === "health" && (
+                <>
+                  <div className="service-grid">
+                    {service("Lege", "health", () => showInfo("doctor"))}
+                    {service("Psykolog", "heart", () =>
+                      showInfo("psychologist"),
+                    )}
+                  </div>
+                  <p className="note">
+                    Ikke for akutt hjelp. Ring <a href="tel:113">113</a> ved
+                    fare for liv og helse. Legevakt:{" "}
+                    <a href="tel:116117">116 117</a>.
+                  </p>
+                </>
+              )}
+              {page === "services" && (
+                <>
+                  <div className="service-grid">
+                    {service("Rørlegger og elektriker", "tools", () =>
+                      showInfo("technical"),
+                    )}
+                    {service("Snekker og vedlikehold", "home", () =>
+                      showInfo("maintenance"),
+                    )}
+                    {service("Rengjøring og hage", "plant", () =>
+                      showInfo("housekeeping"),
+                    )}
+                  </div>
+                  <p className="note">
+                    Eksempeltjenester. Tilbyder, pris og vilkår må avklares før
+                    bestilling.
+                  </p>
+                </>
+              )}
+              {page === "friends" && (
+                <>
+                  <Connections />
+                  <button
+                    className="button outline preview-launch"
+                    onClick={() => {
+                      setParents((current) => [...current, "friends"]);
+                      setPage("preview");
+                    }}
+                  >
+                    Se eksempel som venn
+                  </button>
+                </>
+              )}
+              {page === "devices" && <ExampleDevices />}
+              {page === "preview" && <ExampleFriendView />}
+            </>
+          )}
 
           {modal === "flow" && (
             <form
@@ -490,6 +580,11 @@ export default function DesignApp() {
                 event.preventDefault();
                 if (step !== 4) {
                   setStep(step + 1);
+                  return;
+                }
+                if (professional) {
+                  setExampleComplete(true);
+                  setModal("complete");
                   return;
                 }
                 if (savingLock.current) return;
@@ -541,46 +636,54 @@ export default function DesignApp() {
                 </div>
               )}
               {step === 2 && (
-                <fieldset className="choices">
-                  <legend className="sr-only">Oppgave</legend>
-                  {category.tasks.map((item) => (
-                    <label className="choice" key={item}>
-                      <input
-                        type="radio"
-                        name="task"
-                        value={item}
-                        checked={task === item}
-                        required
-                        onChange={() => setTask(item)}
-                      />
-                      <span>
-                        <Icon name={category.icon} />
-                        {item}
-                      </span>
-                    </label>
-                  ))}
-                </fieldset>
+                <>
+                  {professional && (
+                    <p className="note">
+                      {professionalGroups[professional].safety}
+                    </p>
+                  )}
+                  <fieldset className="choices">
+                    <legend className="sr-only">Oppgave</legend>
+                    {category.tasks.map((item) => (
+                      <label className="choice" key={item}>
+                        <input
+                          type="radio"
+                          name="task"
+                          value={item}
+                          checked={task === item}
+                          required
+                          onChange={() => setTask(item)}
+                        />
+                        <span>
+                          <Icon name={category.icon} />
+                          {item}
+                        </span>
+                      </label>
+                    ))}
+                  </fieldset>
+                </>
               )}
               {step === 3 && (
                 <>
                   <fieldset className="choices">
                     <legend className="sr-only">Tidspunkt</legend>
-                    {["Denne uken", "Neste uke", "Jeg er fleksibel"].map(
-                      (item) => (
-                        <label className="choice" key={item}>
-                          <input
-                            type="radio"
-                            name="timing"
-                            checked={timing === item}
-                            onChange={() => setTiming(item)}
-                          />
-                          <span>
-                            <Icon name="calendar" />
-                            {item}
-                          </span>
-                        </label>
-                      ),
-                    )}
+                    {(professional
+                      ? ["Så snart som mulig", "Denne uken", "Jeg er fleksibel"]
+                      : ["Denne uken", "Neste uke", "Jeg er fleksibel"]
+                    ).map((item) => (
+                      <label className="choice" key={item}>
+                        <input
+                          type="radio"
+                          name="timing"
+                          checked={timing === item}
+                          onChange={() => setTiming(item)}
+                        />
+                        <span>
+                          <Icon name="calendar" />
+                          {item}
+                        </span>
+                      </label>
+                    ))}
                   </fieldset>
                   <details className="optional-details">
                     <summary>Legg til detaljer (valgfritt)</summary>
@@ -598,7 +701,7 @@ export default function DesignApp() {
                       <button
                         type="button"
                         className="field-mic"
-                        aria-label="Simuler tale til tekst for ekstra opplysninger"
+                        aria-label="Tale til tekst for ekstra opplysninger"
                         onClick={() => openVoice("details")}
                       >
                         <Icon name="mic" />
@@ -626,9 +729,11 @@ export default function DesignApp() {
                     )}
                   </dl>
                   <p className="note">
-                    {user
-                      ? "Lagres privat på kontoen din. Ingen hjelper tildeles automatisk. Ikke legg inn helseopplysninger."
-                      : "Lukk vinduet og logg inn øverst på siden. Velg deretter «Fortsett med utkastet ditt» for å lagre."}
+                    {professional
+                      ? "Demonstrasjon av betalt hjelp. Ingen forespørsel sendes eller lagres. Du må få se tilbyder, pris og vilkår før en reell bestilling."
+                      : user
+                        ? "Lagres privat på kontoen din. Ingen hjelper tildeles automatisk. Ikke legg inn helseopplysninger."
+                        : "Lukk vinduet og logg inn øverst på siden. Velg deretter «Fortsett med utkastet ditt» for å lagre."}
                   </p>
                 </>
               )}
@@ -643,7 +748,11 @@ export default function DesignApp() {
                     type="button"
                     className="text-button"
                     disabled={saving}
-                    onClick={() => setStep(step - 1)}
+                    onClick={() =>
+                      professional && step === 2
+                        ? closeModal()
+                        : setStep(step - 1)
+                    }
                   >
                     {step === 4 ? "Endre" : "Tilbake"}
                   </button>
@@ -652,7 +761,13 @@ export default function DesignApp() {
                     className="button primary"
                     disabled={saving}
                   >
-                    {saving ? "Lagrer …" : step === 4 ? "Lagre" : "Neste"}
+                    {saving
+                      ? "Lagrer …"
+                      : step === 4
+                        ? professional
+                          ? "Bekreft eksempel"
+                          : "Lagre"
+                        : "Neste"}
                     <Icon name="arrow" />
                   </button>
                 </div>
@@ -670,59 +785,17 @@ export default function DesignApp() {
             </>
           )}
           {modal === "voice" && (
-            <>
-              <p>
-                Fortell hva du trenger hjelp til, eller hva du kan bidra med.
-              </p>
-              <p className="note">
-                Dette er en simulering. Mikrofonen brukes ikke, og ingen lyd tas
-                opp eller sendes. Du kan prøve med eksempeltekst eller skrive
-                selv.
-              </p>
-              <p className="voice-status" role="status">
-                {voiceSimulated
-                  ? "Eksempeltekst lagt til. Du kan rette teksten nedenfor."
-                  : "Klar til å prøve med eksempeltekst."}
-              </p>
-              <button
-                className="button outline"
-                onClick={() => {
-                  setVoiceText(
-                    "Jeg ønsker selskap på en tur i nabolaget denne uken.",
-                  );
-                  setVoiceSimulated(true);
-                }}
-              >
-                <Icon name="mic" />
-                Prøv eksempeltekst
-              </button>
-              <label className="voice-label" htmlFor="design-voice-text">
-                Dette vil jeg si
-              </label>
-              <textarea
-                id="design-voice-text"
-                value={voiceText}
-                onChange={(event) => setVoiceText(event.target.value)}
-                placeholder="Skriv eller prøv eksempelteksten."
-              />
-              <div className="dialog-actions">
-                <button className="text-button" onClick={closeModal}>
-                  Tilbake
-                </button>
-                <button
-                  className="button primary"
-                  disabled={!voiceText.trim()}
-                  onClick={() => {
-                    if (voiceTarget === "details") {
-                      setDescription(voiceText);
-                      setModal("flow");
-                    } else setModal("voice-purpose");
-                  }}
-                >
-                  Bruk teksten
-                </button>
-              </div>
-            </>
+            <SpeechInput
+              value={voiceText}
+              onChange={setVoiceText}
+              onBack={closeModal}
+              onUse={() => {
+                if (voiceTarget === "details") {
+                  setDescription(voiceText);
+                  setModal("flow");
+                } else setModal("voice-purpose");
+              }}
+            />
           )}
           {modal === "voice-purpose" && (
             <>
@@ -751,12 +824,19 @@ export default function DesignApp() {
           {modal === "complete" && (
             <>
               <p>
-                Forespørselen er lagret. Du finner den under «Mine forespørsler
-                og tilbud» nederst på siden. Ingen hjelper er tildelt eller
-                avtale bestilt.
+                {exampleComplete
+                  ? "Dette var en demonstrasjon. Ingenting er sendt, bestilt eller lagret."
+                  : "Forespørselen er lagret under Mine avtaler. Ingen hjelper er tildelt eller avtale bestilt."}
               </p>
-              <button className="button primary" onClick={() => setModal(null)}>
-                Tilbake til oversikten
+              <button
+                className="button primary"
+                onClick={() =>
+                  exampleComplete ? closeModal() : navigate("appointments")
+                }
+              >
+                {exampleComplete
+                  ? "Tilbake til oversikten"
+                  : "Se mine forespørsler"}
               </button>
             </>
           )}

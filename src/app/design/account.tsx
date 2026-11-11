@@ -26,6 +26,12 @@ type SavedRequest = RequestDraft & {
 const AccountContext = createContext<{
   user: User | null;
   saveRequest: (draft: RequestDraft) => Promise<void>;
+  requests: SavedRequest[];
+  loading: boolean;
+  listError: string;
+  refreshRequests: () => void;
+  cancelRequest: (id: string) => Promise<void>;
+  cancelling: string | null;
 } | null>(null);
 
 export function useAccount() {
@@ -34,7 +40,19 @@ export function useAccount() {
   return account;
 }
 
-export function AccountMenu() {
+export function AccountMenu({
+  onRequests,
+  onConnections,
+  onDevices,
+  onHealth,
+  onServices,
+}: {
+  onRequests: () => void;
+  onConnections: () => void;
+  onDevices: () => void;
+  onHealth: () => void;
+  onServices: () => void;
+}) {
   const { user } = useAccount();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -47,17 +65,26 @@ export function AccountMenu() {
       <div id="account-dropdown" className="account-dropdown" popover="auto">
         <h2>Din konto</h2>
         <p className="account-email">{user?.email}</p>
-        <a
-          href="#requests-title"
-          onClick={(event) => {
-            event.currentTarget
-              .closest<HTMLElement>("[popover]")
-              ?.hidePopover();
-            document.getElementById("requests-title")?.focus();
-          }}
-        >
-          Mine forespørsler og tilbud
-        </a>
+        {[
+          ["Mine avtaler og forespørsler", onRequests],
+          ["Tilkoblinger", onConnections],
+          ["Smarte produkter", onDevices],
+          ["Lege og psykolog", onHealth],
+          ["Hus og hjem", onServices],
+        ].map(([label, action]) => (
+          <button
+            key={label as string}
+            className="text-button"
+            onClick={(event) => {
+              event.currentTarget
+                .closest<HTMLElement>("[popover]")
+                ?.hidePopover();
+              (action as () => void)();
+            }}
+          >
+            {label as string}
+          </button>
+        ))}
         <button
           className="button outline"
           disabled={busy}
@@ -194,7 +221,18 @@ export default function Account({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AccountContext.Provider value={{ user, saveRequest }}>
+    <AccountContext.Provider
+      value={{
+        user,
+        saveRequest,
+        requests,
+        loading,
+        listError,
+        refreshRequests: () => setRevision((value) => value + 1),
+        cancelRequest,
+        cancelling,
+      }}
+    >
       {!ready || !user ? (
         <>
           <header className="design-header">
@@ -323,82 +361,85 @@ export default function Account({ children }: { children: ReactNode }) {
           </main>
         </>
       ) : (
-        <>
-          {children}
-          {user && (
-            <section
-              className="saved-requests"
-              aria-labelledby="requests-title"
-            >
-              <h2 id="requests-title" tabIndex={-1}>
-                Mine forespørsler og tilbud
-              </h2>
-              <p className="note">
-                Disse er lagret på kontoen din. Ingen hjelper er tildelt og
-                ingen avtale er bestilt.
-              </p>
-              <button
-                className="text-button"
-                disabled={loading}
-                onClick={() => setRevision((value) => value + 1)}
-              >
-                Oppdater listen
-              </button>
-              {loading && <p role="status">Henter forespørsler …</p>}
-              {listError && (
-                <p role="alert" className="account-error">
-                  {listError}
-                </p>
-              )}
-              {!loading &&
-                !listError &&
-                !requests.some((request) => request.user_id === user.id) && (
-                  <p>Du har ingen lagrede forespørsler eller tilbud ennå.</p>
-                )}
-              <div className="request-list">
-                {requests
-                  .filter((request) => request.user_id === user.id)
-                  .map((request) => (
-                    <article className="request-record" key={request.id}>
-                      <span className="tag">
-                        {request.status === "cancelled" ? "Avbrutt" : "Åpen"}
-                      </span>
-                      <h3>{request.task}</h3>
-                      <p>
-                        {request.kind === "offer"
-                          ? "Jeg vil hjelpe"
-                          : "Jeg trenger hjelp"}{" "}
-                        · {request.timing}
-                      </p>
-                      {request.description && (
-                        <p className="request-description">
-                          {request.description}
-                        </p>
-                      )}
-                      <p className="note">
-                        Opprettet{" "}
-                        {new Date(request.created_at).toLocaleDateString(
-                          "nb-NO",
-                        )}
-                      </p>
-                      {request.status === "open" && (
-                        <button
-                          className="button outline"
-                          disabled={cancelling !== null}
-                          onClick={() => void cancelRequest(request.id)}
-                        >
-                          {cancelling === request.id
-                            ? "Avbryter …"
-                            : "Avbryt forespørsel"}
-                        </button>
-                      )}
-                    </article>
-                  ))}
-              </div>
-            </section>
-          )}
-        </>
+        <>{children}</>
       )}
     </AccountContext.Provider>
+  );
+}
+
+export function SavedRequests() {
+  const {
+    user,
+    requests,
+    loading,
+    listError,
+    refreshRequests,
+    cancelRequest,
+    cancelling,
+  } = useAccount();
+  const ownRequests = requests.filter(
+    (request) => request.user_id === user?.id,
+  );
+  return (
+    <section aria-labelledby="requests-title">
+      <h3 id="requests-title">Mine forespørsler og tilbud</h3>
+      <p className="note">
+        Lagret på kontoen din. Ingen hjelper er tildelt og ingen avtale er
+        bestilt.
+      </p>
+      <button
+        className="text-button"
+        disabled={loading}
+        onClick={refreshRequests}
+      >
+        Oppdater listen
+      </button>
+      {loading && <p role="status">Henter forespørsler …</p>}
+      {listError && (
+        <p role="alert" className="account-error">
+          {listError}
+        </p>
+      )}
+      {!loading && !listError && !ownRequests.length && (
+        <p>Du har ingen lagrede forespørsler eller tilbud ennå.</p>
+      )}
+      <div className="request-list">
+        {ownRequests.map((request) => (
+          <article className="request-record" key={request.id}>
+            <span className="tag">
+              {request.status === "cancelled" ? "Avbrutt" : "Åpen"}
+            </span>
+            <h3>{request.task}</h3>
+            <p>
+              {request.kind === "offer"
+                ? "Jeg kan hjelpe"
+                : "Jeg trenger hjelp"}{" "}
+              · {request.timing}
+            </p>
+            {request.description && (
+              <p className="request-description">{request.description}</p>
+            )}
+            <p className="note">
+              Opprettet{" "}
+              {new Date(request.created_at).toLocaleDateString("nb-NO")}
+            </p>
+            {request.status === "open" && (
+              <button
+                className="button outline"
+                disabled={cancelling !== null}
+                onClick={() => {
+                  if (window.confirm("Vil du avbryte denne forespørselen?"))
+                    void cancelRequest(request.id);
+                }}
+              >
+                {cancelling === request.id
+                  ? "Avbryter …"
+                  : "Avbryt forespørsel"}
+              </button>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }

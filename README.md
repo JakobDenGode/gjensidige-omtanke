@@ -9,6 +9,26 @@ with local data until real integrations are explicitly requested; see `AGENTS.md
 The `/design` page supports Supabase email/password accounts and private persisted
 help requests/offers, including cancellation. Other services remain prototypes.
 
+## Design Experience
+
+`/design` follows the revised sketch: a narrow app shell on all screen sizes,
+two-column action cards, fixed bottom navigation, and secondary views in dialogs.
+"Mine avtaler" contains actual saved requests alongside clearly marked example
+appointments. "Min konto" also opens health, home services, and smart products.
+
+Example alerts can be browsed and dismissed. Rain and snow open a three-step
+professional-help demonstration; no professional booking is saved or sent.
+Smart-product states and the friend-view preview are fictional. Real connections
+are still managed separately; the preview cannot access another user's records.
+
+Speech input uses browser speech recognition in Norwegian when supported. It
+requires an explicit start and microphone permission, stops on dialog dismissal,
+and always offers editable text and a typing fallback. Audio may be processed by
+the browser vendor; no transcription provider or audio storage is configured.
+
+Real alerts, sensors, professional bookings, appointments, and delegated friend
+access require separate integrations and explicit authorization rules before use.
+
 Live app: https://gjensidige-omtanke.vercel.app
 
 Repository: https://github.com/JakobDenGode/gjensidige-omtanke
@@ -73,7 +93,7 @@ Signed-out visitors see only the login/registration screen. The application is
 not mounted until the session is loaded and signed in. Account details and sign-out
 are available in the header's "Min konto" dropdown; Escape or an outside click
 closes it. Database row-level security remains the authorization boundary.
-Saved requests appear below the prototype and survive refreshes. Cancellation
+Saved requests appear in "Mine avtaler" and survive refreshes. Cancellation
 changes the saved status; it does not delete the record or book a real service.
 
 The initial migration has been applied through the CLI query API and registered
