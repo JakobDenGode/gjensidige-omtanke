@@ -9,6 +9,56 @@
   font-size: 1.25rem;
 }
 
+.design-app .account-panel,
+.design-app .saved-requests {
+  max-width: 77.5rem;
+  margin-inline: auto;
+  padding: 1.5rem 1.25rem;
+}
+.design-app .saved-requests {
+  padding-bottom: 13rem;
+}
+.design-app .account-panel {
+  border-bottom: 1px solid var(--design-line);
+}
+.design-app .account-form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 30rem;
+  margin-top: 1rem;
+}
+.design-app .account-form input {
+  font: inherit;
+  color: inherit;
+  min-height: 3rem;
+  padding: 0.5rem;
+  border: 1px solid var(--design-line);
+  border-radius: 0.25rem;
+  width: 100%;
+}
+.design-app .account-error {
+  color: var(--builders-color-error-300);
+  margin-block: 1rem;
+}
+.design-app .request-list {
+  display: grid;
+  gap: 1rem;
+}
+.design-app .request-record {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--design-line);
+  border-radius: 0.5rem;
+}
+.design-app .request-record .button {
+  justify-self: start;
+}
+.design-app .request-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .design-app *,
 .design-app *::before,
 .design-app *::after {

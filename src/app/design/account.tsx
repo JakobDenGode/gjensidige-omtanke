@@ -1,0 +1,345 @@
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import type { User } from "@supabase/supabase-js";
+import { createSupabaseClient } from "@/lib/supabase";
+
+type RequestDraft = {
+  kind: "request" | "offer";
+  category: string;
+  task: string;
+  timing: string;
+  description: string;
+};
+type SavedRequest = RequestDraft & {
+  id: string;
+  user_id: string;
+  status: "open" | "cancelled";
+  created_at: string;
+};
+const AccountContext = createContext<{
+  user: User | null;
+  saveRequest: (draft: RequestDraft) => Promise<void>;
+} | null>(null);
+
+export function useAccount() {
+  const account = useContext(AccountContext);
+  if (!account) throw new Error("Account provider is missing.");
+  return account;
+}
+
+export default function Account({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const configured = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  );
+  const [ready, setReady] = useState(!configured);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [requests, setRequests] = useState<SavedRequest[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [listError, setListError] = useState("");
+  const [revision, setRevision] = useState(0);
+  const [cancelling, setCancelling] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!configured) return;
+    let active = true;
+    const supabase = createSupabaseClient();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setUser(session?.user ?? null);
+      setReady(true);
+    });
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, [configured]);
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    async function load() {
+      setLoading(true);
+      setListError("");
+      try {
+        const { data, error } = await createSupabaseClient()
+          .from("help_requests")
+          .select(
+            "id,user_id,kind,category,task,timing,description,status,created_at",
+          )
+          .eq("user_id", user!.id)
+          .order("created_at", { ascending: false })
+          .limit(100);
+        if (error) throw error;
+        if (active) setRequests(data as SavedRequest[]);
+      } catch {
+        if (active)
+          setListError("Kunne ikke hente forespørslene dine. Prøv igjen.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    void load();
+    return () => {
+      active = false;
+    };
+  }, [user, revision]);
+
+  async function saveRequest(draft: RequestDraft) {
+    if (!user)
+      throw new Error(
+        "Logg inn øverst på siden før du lagrer. Det du har fylt ut blir beholdt.",
+      );
+    if (!draft.task || draft.description.length > 2000)
+      throw new Error(
+        "Velg en oppgave og bruk maksimalt 2000 tegn i beskrivelsen.",
+      );
+    const { error } = await createSupabaseClient()
+      .from("help_requests")
+      .insert({ ...draft, user_id: user.id })
+      .select("id")
+      .single();
+    if (error)
+      throw new Error(
+        "Kunne ikke lagre. Kontroller tilkoblingen og at du fortsatt er logget inn, og prøv igjen.",
+      );
+    setRevision((value) => value + 1);
+  }
+
+  async function cancelRequest(id: string) {
+    if (!user || cancelling) return;
+    setCancelling(id);
+    setListError("");
+    try {
+      const { error } = await createSupabaseClient()
+        .from("help_requests")
+        .update({ status: "cancelled" })
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .select("id")
+        .single();
+      if (error) throw error;
+      setRevision((value) => value + 1);
+    } catch {
+      setListError("Kunne ikke avbryte forespørselen. Prøv igjen.");
+    } finally {
+      setCancelling(null);
+    }
+  }
+
+  return (
+    <AccountContext.Provider value={{ user, saveRequest }}>
+      <section className="account-panel" aria-labelledby="account-title">
+        <h2 id="account-title">
+          {user ? "Din konto" : "Logg inn for å lagre"}
+        </h2>
+        {!ready ? (
+          <p role="status">Laster konto …</p>
+        ) : !configured ? (
+          <p role="alert">
+            Supabase er ikke konfigurert. Legg til miljøvariablene før du logger
+            inn.
+          </p>
+        ) : user ? (
+          <>
+            <p>Logget inn som {user.email}</p>
+            <button
+              className="button outline"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setError("");
+                try {
+                  const { error } = await createSupabaseClient().auth.signOut();
+                  if (error) throw error;
+                  setRequests([]);
+                  setMessage("");
+                } catch {
+                  setError("Kunne ikke logge ut. Prøv igjen.");
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Logg ut
+            </button>
+          </>
+        ) : (
+          <form
+            className="account-form"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (busy) return;
+              const form = event.currentTarget;
+              const fields = new FormData(form);
+              const email = String(fields.get("email")).trim();
+              const password = String(fields.get("password"));
+              setBusy(true);
+              setError("");
+              setMessage("");
+              try {
+                const supabase = createSupabaseClient();
+                const result =
+                  authMode === "signup"
+                    ? await supabase.auth.signUp({
+                        email,
+                        password,
+                        options: {
+                          emailRedirectTo: `${window.location.origin}/design`,
+                        },
+                      })
+                    : await supabase.auth.signInWithPassword({
+                        email,
+                        password,
+                      });
+                if (result.error) throw result.error;
+                form.reset();
+                if (authMode === "signup" && !result.data.session)
+                  setMessage(
+                    "Sjekk e-posten din for å bekrefte kontoen. Logg deretter inn her. Hvis adressen allerede er registrert, kan du logge inn.",
+                  );
+              } catch {
+                setError(
+                  authMode === "signup"
+                    ? "Kunne ikke opprette konto. Bruk en gyldig e-post og minst 8 tegn i passordet. Prøv igjen senere hvis du har gjort mange forsøk."
+                    : "Kunne ikke logge inn. Kontroller e-post, passord og at e-posten er bekreftet.",
+                );
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <label htmlFor="account-email">E-post</label>
+            <input
+              id="account-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              maxLength={254}
+              required
+              disabled={busy}
+            />
+            <label htmlFor="account-password">
+              Passord{authMode === "signup" ? " (minst 8 tegn)" : ""}
+            </label>
+            <input
+              id="account-password"
+              name="password"
+              type="password"
+              autoComplete={
+                authMode === "signup" ? "new-password" : "current-password"
+              }
+              minLength={authMode === "signup" ? 8 : undefined}
+              required
+              disabled={busy}
+            />
+            <button className="button primary" disabled={busy}>
+              {busy
+                ? "Vennligst vent …"
+                : authMode === "signup"
+                  ? "Opprett konto"
+                  : "Logg inn"}
+            </button>
+            <button
+              type="button"
+              className="text-button"
+              disabled={busy}
+              onClick={() => {
+                setAuthMode(authMode === "signin" ? "signup" : "signin");
+                setError("");
+                setMessage("");
+              }}
+            >
+              {authMode === "signin"
+                ? "Ny her? Opprett konto"
+                : "Har du konto? Logg inn"}
+            </button>
+          </form>
+        )}
+        {error && (
+          <p role="alert" className="account-error">
+            {error}
+          </p>
+        )}
+        {message && <p role="status">{message}</p>}
+      </section>
+      {children}
+      {user && (
+        <section className="saved-requests" aria-labelledby="requests-title">
+          <h2 id="requests-title">Mine forespørsler og tilbud</h2>
+          <p className="note">
+            Disse er lagret på kontoen din. Ingen hjelper er tildelt og ingen
+            avtale er bestilt.
+          </p>
+          <button
+            className="text-button"
+            disabled={loading}
+            onClick={() => setRevision((value) => value + 1)}
+          >
+            Oppdater listen
+          </button>
+          {loading && <p role="status">Henter forespørsler …</p>}
+          {listError && (
+            <p role="alert" className="account-error">
+              {listError}
+            </p>
+          )}
+          {!loading &&
+            !listError &&
+            !requests.some((request) => request.user_id === user.id) && (
+              <p>Du har ingen lagrede forespørsler eller tilbud ennå.</p>
+            )}
+          <div className="request-list">
+            {requests
+              .filter((request) => request.user_id === user.id)
+              .map((request) => (
+                <article className="request-record" key={request.id}>
+                  <span className="tag">
+                    {request.status === "cancelled" ? "Avbrutt" : "Åpen"}
+                  </span>
+                  <h3>{request.task}</h3>
+                  <p>
+                    {request.kind === "offer"
+                      ? "Jeg vil hjelpe"
+                      : "Jeg trenger hjelp"}{" "}
+                    · {request.timing}
+                  </p>
+                  {request.description && (
+                    <p className="request-description">{request.description}</p>
+                  )}
+                  <p className="note">
+                    Opprettet{" "}
+                    {new Date(request.created_at).toLocaleDateString("nb-NO")}
+                  </p>
+                  {request.status === "open" && (
+                    <button
+                      className="button outline"
+                      disabled={cancelling !== null}
+                      onClick={() => void cancelRequest(request.id)}
+                    >
+                      {cancelling === request.id
+                        ? "Avbryter …"
+                        : "Avbryt forespørsel"}
+                    </button>
+                  )}
+                </article>
+              ))}
+          </div>
+        </section>
+      )}
+    </AccountContext.Provider>
+  );
+}

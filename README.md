@@ -6,7 +6,8 @@ The homepage displays "Gjensidige Omtanke" with lightweight local styles matchin
 It loads Gjensidige Display and Sans from the public Gjensidige CDN, with no
 Builders npm packages or analytics dependencies. Future functionality is mocked
 with local data until real integrations are explicitly requested; see `AGENTS.md`.
-Supabase is provisioned for persistence. The design UI is not connected yet.
+The `/design` page supports Supabase email/password accounts and private persisted
+help requests/offers, including cancellation. Other services remain prototypes.
 
 Live app: https://gjensidige-omtanke.vercel.app
 
@@ -56,7 +57,25 @@ The client factory is in `src/lib/supabase.ts`.
 
 Version-controlled migrations define `help_requests` for requests and offers.
 Authenticated users can create/read their own records and update their status.
-Anonymous access is denied. Sign-in and UI persistence are not implemented yet.
+Anonymous access is denied. Sign up on `/design`, confirm your email, then sign in.
+Saved requests appear below the prototype and survive refreshes. Cancellation
+changes the saved status; it does not delete the record or book a real service.
+
+The initial migration has been applied through the CLI query API and registered
+in Supabase migration history because the direct `db push` login timed out.
+
+Authentication configuration in `supabase/config.toml` specifies the production
+site URL, local/production confirmation redirects, and email confirmation. These
+settings have been synced to hosted Auth after reviewing `supabase config diff`.
+Configure custom SMTP in Supabase for unrestricted confirmation email delivery;
+the default email service is restricted and rate-limited. Never disable email
+confirmation just to bypass delivery restrictions.
+
+Run the rollback-only owner isolation test against the hosted project:
+
+```bash
+npx supabase@latest db query --remote=fiobfnbeiqmdlffntxxv --file supabase/tests/request_access.sql --yes
+```
 
 ```bash
 npx supabase@latest login

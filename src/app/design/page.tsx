@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import DesignApp from "./design-app";
+import Account from "./account";
 import "./design.css";
 
 export const metadata: Metadata = {
@@ -8,5 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default function DesignPage() {
-  return <DesignApp />;
+  return (
+    <div className="design-app">
+      <Account>
+        <DesignApp />
+      </Account>
+    </div>
+  );
 }

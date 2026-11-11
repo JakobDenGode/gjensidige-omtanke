@@ -1,4 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+let client: SupabaseClient | undefined;
 
 export function createSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -8,5 +10,6 @@ export function createSupabaseClient() {
     throw new Error("Supabase environment variables are not configured.");
   }
 
-  return createClient(url, key);
+  client ??= createClient(url, key);
+  return client;
 }

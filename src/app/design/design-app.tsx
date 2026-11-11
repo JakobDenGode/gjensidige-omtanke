@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useAccount } from "./account";
 
 const icons = {
   arrow: "M4 12h16m-6-6 6 6-6 6",
@@ -149,6 +150,10 @@ const initialFriends = [
 ];
 
 export default function DesignApp() {
+  const { user, saveRequest } = useAccount();
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const savingLock = useRef(false);
   const [page, setPage] = useState<Page>("home");
   const [modal, setModal] = useState<Modal>(null);
   const [mode, setMode] = useState<"request" | "offer">("request");
@@ -196,6 +201,7 @@ export default function DesignApp() {
   }
 
   function startFlow(nextMode: "request" | "offer", draft = "") {
+    setSaveError("");
     setMode(nextMode);
     setTask("");
     setDescription(draft);
@@ -217,6 +223,7 @@ export default function DesignApp() {
   }
 
   function closeModal() {
+    if (savingLock.current) return;
     if (modal === "voice" && voiceTarget === "details") setModal("flow");
     else setModal(null);
   }
@@ -286,7 +293,7 @@ export default function DesignApp() {
   if (modal === "remove") modalTitle = "Fjerne tilgangen?";
   if (modal === "voice") modalTitle = "Si det med egne ord";
   if (modal === "voice-purpose") modalTitle = "Hva vil du bruke teksten til?";
-  if (modal === "complete") modalTitle = "Ferdig i skissen";
+  if (modal === "complete") modalTitle = "Lagret på kontoen din";
 
   return (
     <div className="design-app">
@@ -294,7 +301,8 @@ export default function DesignApp() {
         Hopp til innhold
       </a>
       <div className="prototype">
-        <strong>Konseptskisse</strong> · Kun eksempeldata
+        <strong>Under utvikling</strong> · Forespørsler lagres når du er logget
+        inn. Andre tjenester er eksempler.
       </div>
       <header className="design-header">
         <div className="header-inner">
@@ -365,6 +373,14 @@ export default function DesignApp() {
                   <Icon name="arrow" />
                 </button>
               </div>
+              {task && (
+                <button
+                  className="text-button"
+                  onClick={() => setModal("flow")}
+                >
+                  Fortsett med utkastet ditt
+                </button>
+              )}
               {service("Lege og psykolog", "health", () => navigate("health"))}
               {service("Håndverker og hjemmetjenester", "tools", () =>
                 navigate("services"),
@@ -372,7 +388,7 @@ export default function DesignApp() {
             </div>
             <aside>
               <div className="aside-title">
-                <h2>Din neste avtale</h2>
+                <h2>Eksempel på avtale</h2>
                 <span className="count">1</span>
               </div>
               {appointmentCard()}
@@ -545,10 +561,36 @@ export default function DesignApp() {
 
           {modal === "flow" && (
             <form
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
-                if (step === 4) setModal("complete");
-                else setStep(step + 1);
+                if (step !== 4) {
+                  setStep(step + 1);
+                  return;
+                }
+                if (savingLock.current) return;
+                savingLock.current = true;
+                setSaving(true);
+                setSaveError("");
+                try {
+                  await saveRequest({
+                    kind: mode,
+                    category: category.name,
+                    task,
+                    timing,
+                    description: description.trim(),
+                  });
+                  setTask("");
+                  setModal("complete");
+                } catch (error) {
+                  setSaveError(
+                    error instanceof Error
+                      ? error.message
+                      : "Kunne ikke lagre. Prøv igjen.",
+                  );
+                } finally {
+                  savingLock.current = false;
+                  setSaving(false);
+                }
               }}
             >
               {step === 1 && (
@@ -623,6 +665,7 @@ export default function DesignApp() {
                     <div className="dictation-field">
                       <textarea
                         id="design-description"
+                        maxLength={2000}
                         value={description}
                         onChange={(event) => setDescription(event.target.value)}
                         placeholder="Bare hvis du ønsker å forklare mer."
@@ -657,20 +700,34 @@ export default function DesignApp() {
                       </>
                     )}
                   </dl>
-                  <p className="note">Dette er en skisse. Ingenting sendes.</p>
+                  <p className="note">
+                    {user
+                      ? "Lagres privat på kontoen din. Ingen hjelper tildeles automatisk. Ikke legg inn helseopplysninger."
+                      : "Lukk vinduet og logg inn øverst på siden. Velg deretter «Fortsett med utkastet ditt» for å lagre."}
+                  </p>
                 </>
+              )}
+              {saveError && (
+                <p role="alert" className="account-error">
+                  {saveError}
+                </p>
               )}
               {step > 1 && (
                 <div className="dialog-actions">
                   <button
                     type="button"
                     className="text-button"
+                    disabled={saving}
                     onClick={() => setStep(step - 1)}
                   >
                     {step === 4 ? "Endre" : "Tilbake"}
                   </button>
-                  <button type="submit" className="button primary">
-                    {step === 4 ? "Bekreft i skissen" : "Neste"}
+                  <button
+                    type="submit"
+                    className="button primary"
+                    disabled={saving}
+                  >
+                    {saving ? "Lagrer …" : step === 4 ? "Lagre" : "Neste"}
                     <Icon name="arrow" />
                   </button>
                 </div>
@@ -825,7 +882,11 @@ export default function DesignApp() {
           )}
           {modal === "complete" && (
             <>
-              <p>Ingenting er sendt eller bestilt.</p>
+              <p>
+                Forespørselen er lagret. Du finner den under «Mine forespørsler
+                og tilbud» nederst på siden. Ingen hjelper er tildelt eller
+                avtale bestilt.
+              </p>
               <button className="button primary" onClick={() => setModal(null)}>
                 Tilbake til oversikten
               </button>
