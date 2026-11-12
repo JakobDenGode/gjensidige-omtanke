@@ -15,6 +15,7 @@ import ProfileNavigation from "./profile-navigation";
 import Household from "./household";
 import BrandLogo from "../brand-logo";
 import ProfilePhoto from "./profile-photo";
+import TaskIcon from "./task-icon";
 
 type Profile = {
   city: string;
@@ -368,7 +369,7 @@ export default function CityProfile({
                 </p>
                 <div className="profile-checkbox-grid">
                   {taskAreas.map((area) => (
-                    <label className="profile-checkbox" key={area}>
+                    <label className="profile-checkbox profile-task-checkbox" key={area}>
                       <input
                         type="checkbox"
                         checked={draft[field].includes(area)}
@@ -382,6 +383,7 @@ export default function CityProfile({
                           })
                         }
                       />
+                      <TaskIcon area={area} />
                       <span>{area}</span>
                     </label>
                   ))}

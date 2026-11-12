@@ -5,6 +5,7 @@ import { useCity } from "./city-profile";
 import { createSupabaseClient } from "@/lib/supabase";
 import { useAccount } from "./account";
 import { taskAreas } from "@/lib/task-areas";
+import TaskIcon from "./task-icon";
 
 export default function Contributions({ onClose }: { onClose: () => void }) {
   const { profile, reloadProfile } = useCity();
@@ -57,6 +58,7 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
                   )
                 }
               />
+              <TaskIcon area={area} />
               <span>{area}</span>
             </label>
           ))}

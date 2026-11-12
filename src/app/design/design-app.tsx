@@ -241,14 +241,6 @@ export default function DesignApp() {
           Hjem
         </button>
         <button
-          aria-current={view === "appointments" ? "page" : undefined}
-          aria-haspopup="dialog"
-          onClick={() => setView("appointments")}
-        >
-          <Icon name="calendar" />
-          Mine avtaler
-        </button>
-        <button
           aria-current={view === "friends" ? "page" : undefined}
           aria-haspopup="dialog"
           onClick={() => setView("friends")}

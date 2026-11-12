@@ -9,12 +9,6 @@ export default function ProfileNavigation() {
         </svg>
         Hjem
       </Link>
-      <Link href="/design?view=appointments">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 5h18v16H3Zm4-3v6m10-6v6M3 11h18" />
-        </svg>
-        Mine avtaler
-      </Link>
       <Link href="/design?view=friends">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5v2M12 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />

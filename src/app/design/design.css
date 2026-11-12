@@ -19,6 +19,8 @@
   overflow: hidden;
   font-size: 1.75rem;
 }
+.design-app .task-icon { width: 1.75rem; height: 1.75rem; flex-shrink: 0; }
+.design-app .profile-task-checkbox { grid-template-columns: 1.25rem 1.75rem minmax(0, 1fr); }
 .design-app .profile-avatar img {
   width: 100%;
   height: 100%;
