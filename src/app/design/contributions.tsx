@@ -11,6 +11,7 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
   const { profile, reloadProfile } = useCity();
   const { user } = useAccount();
   const [selected, setSelected] = useState(profile.can_help);
+  const [visible, setVisible] = useState(profile.helper_visible);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return (
@@ -23,7 +24,7 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
         try {
           const { error } = await createSupabaseClient()
             .from("customer_profiles")
-            .update({ can_help: selected })
+            .update({ can_help: selected, helper_visible: visible })
             .eq("user_id", user!.id)
             .select("user_id")
             .single();
@@ -67,6 +68,15 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
       <p className="note" role="status">
         {selected.length} aktiviteter valgt
       </p>
+      <fieldset className="choices">
+        <legend>Vil du bli funnet av andre i byen din?</legend>
+        <label className="choice">
+          <input type="checkbox" checked={visible} disabled={busy} onChange={(event) => setVisible(event.target.checked)} />
+          <span>Vis meg i hjelperlisten</span>
+        </label>
+        <p className="note">Når du velger dette, kan andre innloggede brukere se navnet ditt, byen din, oppgavene du kan hjelpe med, profilbildet og vurderingene dine, og sende deg forespørsler. Adresse og telefon deles ikke automatisk.</p>
+        {!visible && <p className="note">Du er ikke synlig i hjelperlisten nå. Oppgavevalgene dine er fortsatt synlige for vennene dine.</p>}
+      </fieldset>
       {error && (
         <p className="account-error" role="alert">
           {error}

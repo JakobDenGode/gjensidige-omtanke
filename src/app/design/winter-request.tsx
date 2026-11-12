@@ -10,7 +10,6 @@ import {
 } from "@/lib/winter-tasks";
 import { useAccount } from "./account";
 import { Avatar } from "./profile-photo";
-import WinterTaskIcon from "./winter-task-icon";
 import { useCity } from "./city-profile";
 
 type Helper = {
@@ -163,7 +162,6 @@ export default function WinterRequest({
                     )
                   }
                 />
-                <WinterTaskIcon task={task} />
                 <span>{task}</span>
               </label>
             ))}
