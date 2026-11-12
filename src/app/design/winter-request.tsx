@@ -12,6 +12,7 @@ import { useAccount } from "./account";
 import type { NetworkMember } from "./network-tasks";
 import { HelperRating } from "./task-reviews";
 import { Avatar } from "./profile-photo";
+import WinterTaskIcon from "./winter-task-icon";
 
 export default function WinterRequest({
   onClose,
@@ -149,12 +150,13 @@ export default function WinterRequest({
                     )
                   }
                 />
+                <WinterTaskIcon task={task} />
                 <span>{task}</span>
               </label>
             ))}
           </fieldset>
           <p className="note" role="status">
-            {tasks.length} oppgaver valgt
+            {tasks.length} {tasks.length === 1 ? "oppgave" : "oppgaver"} valgt
           </p>
         </>
       )}
