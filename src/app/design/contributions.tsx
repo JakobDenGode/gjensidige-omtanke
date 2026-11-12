@@ -4,14 +4,13 @@ import { useState } from "react";
 import { useCity } from "./city-profile";
 import { createSupabaseClient } from "@/lib/supabase";
 import { useAccount } from "./account";
-import { taskAreas } from "@/lib/task-areas";
+import { contributionAreas } from "@/lib/task-areas";
 import TaskIcon from "./task-icon";
 
 export default function Contributions({ onClose }: { onClose: () => void }) {
   const { profile, reloadProfile } = useCity();
   const { user } = useAccount();
   const [selected, setSelected] = useState(profile.can_help);
-  const [visible, setVisible] = useState(profile.helper_visible);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return (
@@ -24,7 +23,7 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
         try {
           const { error } = await createSupabaseClient()
             .from("customer_profiles")
-            .update({ can_help: selected, helper_visible: visible })
+            .update({ can_help: selected })
             .eq("user_id", user!.id)
             .select("user_id")
             .single();
@@ -45,7 +44,7 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
       <fieldset className="contribution-section">
         <legend>Dette kan {profile.full_name} bidra med</legend>
         <div className="contribution-options">
-          {taskAreas.map((area) => (
+          {contributionAreas.map((area) => (
             <label className="choice" key={area}>
               <input
                 type="checkbox"
@@ -68,15 +67,29 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
       <p className="note" role="status">
         {selected.length} aktiviteter valgt
       </p>
-      <fieldset className="choices">
-        <legend>Vil du bli funnet av andre i byen din?</legend>
-        <label className="choice">
-          <input type="checkbox" checked={visible} disabled={busy} onChange={(event) => setVisible(event.target.checked)} />
-          <span>Vis meg i hjelperlisten</span>
-        </label>
-        <p className="note">Når du velger dette, kan andre innloggede brukere se navnet ditt, byen din, oppgavene du kan hjelpe med, profilbildet og vurderingene dine, og sende deg forespørsler. Adresse og telefon deles ikke automatisk.</p>
-        {!visible && <p className="note">Du er ikke synlig i hjelperlisten nå. Oppgavevalgene dine er fortsatt synlige for vennene dine.</p>}
-      </fieldset>
+      {selected
+        .filter((area) => !contributionAreas.some((choice) => choice === area))
+        .map((area) => (
+          <label className="choice" key={area}>
+            <input
+              type="checkbox"
+              checked
+              disabled={busy}
+              onChange={() =>
+                setSelected(selected.filter((item) => item !== area))
+              }
+            />
+            <span>
+              {area} (tidligere valg – fjern og velg gjerne mer konkret)
+            </span>
+          </label>
+        ))}
+      <p className="note">
+        Alle med fullført profil er synlige i hjelperlisten. Andre innloggede
+        brukere i byen din kan se navnet ditt, byen, oppgavene du kan hjelpe
+        med, profilbildet og vurderingene dine, og sende deg forespørsler.
+        Adresse og telefon deles ikke automatisk.
+      </p>
       {error && (
         <p className="account-error" role="alert">
           {error}

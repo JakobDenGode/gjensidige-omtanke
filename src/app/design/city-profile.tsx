@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { cities, type City } from "@/lib/cities";
-import { taskAreas } from "@/lib/task-areas";
+import { taskAreas, contributionAreas } from "@/lib/task-areas";
 import { createSupabaseClient } from "@/lib/supabase";
 import { usePathname } from "next/navigation";
 import ProfileNavigation from "./profile-navigation";
@@ -46,7 +46,7 @@ const emptyProfile: Profile = {
   has_basement: false,
   snow_on_property: false,
   insurer: "",
-  helper_visible: false,
+  helper_visible: true,
   helper_phone_visible: false,
 };
 const fields =
@@ -372,54 +372,70 @@ export default function CityProfile({
                   senere.
                 </p>
                 <div className="profile-checkbox-grid">
-                  {taskAreas.map((area) => (
-                    <label
-                      className="profile-checkbox profile-task-checkbox"
-                      key={area}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={draft[field].includes(area)}
-                        disabled={busy}
-                        onChange={(event) =>
-                          setDraft({
-                            ...draft,
-                            [field]: event.target.checked
-                              ? [...draft[field], area]
-                              : draft[field].filter((item) => item !== area),
-                          })
-                        }
-                      />
-                      <TaskIcon area={area} />
-                      <span>{area}</span>
-                    </label>
-                  ))}
+                  {(field === "can_help" ? contributionAreas : taskAreas).map(
+                    (area) => (
+                      <label
+                        className="profile-checkbox profile-task-checkbox"
+                        key={area}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={draft[field].includes(area)}
+                          disabled={busy}
+                          onChange={(event) =>
+                            setDraft({
+                              ...draft,
+                              [field]: event.target.checked
+                                ? [...draft[field], area]
+                                : draft[field].filter((item) => item !== area),
+                            })
+                          }
+                        />
+                        <TaskIcon area={area} />
+                        <span>{area}</span>
+                      </label>
+                    ),
+                  )}
                 </div>
+                {field === "can_help" &&
+                  draft.can_help
+                    .filter(
+                      (area) =>
+                        !contributionAreas.some((choice) => choice === area),
+                    )
+                    .map((area) => (
+                      <label className="profile-checkbox" key={area}>
+                        <input
+                          type="checkbox"
+                          checked
+                          disabled={busy}
+                          onChange={() =>
+                            setDraft({
+                              ...draft,
+                              can_help: draft.can_help.filter(
+                                (item) => item !== area,
+                              ),
+                            })
+                          }
+                        />
+                        <span>{area} (tidligere valg)</span>
+                      </label>
+                    ))}
               </fieldset>
             ))}
             <section className="profile-basics">
               <h2>Synlig som hjelper</h2>
               <p className="note">
-                Andre innloggede brukere kan finne deg og sende deg forespørsler
-                når du velger dette. Navn, by, oppgaver, bilde og vurderinger
-                vises, men ikke adresse eller hjelpebehov.
+                Alle med fullført profil er synlige i hjelperlisten. Andre
+                innloggede brukere kan finne deg og sende deg forespørsler.
+                Navn, by, oppgaver, bilde og vurderinger vises, men ikke adresse
+                eller hjelpebehov.
               </p>
               <label className="profile-checkbox">
                 <input
                   type="checkbox"
-                  checked={draft.helper_visible}
-                  disabled={busy}
-                  onChange={(event) =>
-                    setDraft({ ...draft, helper_visible: event.target.checked })
-                  }
-                />
-                <span>Vis meg i hjelperlisten</span>
-              </label>
-              <label className="profile-checkbox">
-                <input
-                  type="checkbox"
                   checked={draft.helper_phone_visible}
-                  disabled={busy || !draft.helper_visible}
+                  disabled={busy}
                   onChange={(event) =>
                     setDraft({
                       ...draft,

@@ -11,17 +11,22 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+Contribution preferences offer eight explicit activities: snow removal, visits,
+shopping, gardening, watering plants, mobile/computer help, collecting parcels,
+and accompanying walks. Both the contribution dialog and profile use these
+choices with task icons. Earlier broad choices are retained as removable legacy
+selections rather than automatically assuming willingness for specific tasks.
+
 ### Helper Directory
 
-Winter requests can now go to opted-in users outside the friend network.
-"Min profil → Synlig som hjelper" enables listing name, city, skills, photo, and
-real review scores/latest review to signed-in users. Phone listing requires a
-separate opt-in. Private addresses, help needs, and email are never listed.
-Existing accounts are not automatically published. The winter helper list shows
-only opted-in users in the customer's saved city, alphabetically, regardless of
+Winter requests can go to users outside the friend network. All completed
+profiles are listed, including existing accounts, with name, city, skills, photo,
+and real review scores/latest review available to signed-in users. Phone listing
+requires a separate opt-in. Private addresses, help needs, and email are never listed.
+The winter helper list shows users in the customer's saved city, alphabetically, regardless of
 friend connections. It does not filter by skill or use precise geolocation.
-Turning visibility off prevents new requests; already-shared directory requests
-remain accessible to their participants. Requests do not create friendships.
+Visibility is always enabled and cannot be switched off. Incomplete profiles and
+the requesting user's own account are excluded. Requests do not create friendships.
 The weather card describes possible melting, not confirmed flooding or insurance.
 
 ### Appointments Between Accounts

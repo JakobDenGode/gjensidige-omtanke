@@ -58,7 +58,10 @@ export default function WinterRequest({
         const { data, error } =
           await createSupabaseClient().rpc("available_helpers");
         if (error) throw error;
-        if (active) setMembers((data ?? []).filter((member: Helper) => member.city === city.name));
+        if (active)
+          setMembers(
+            (data ?? []).filter((member: Helper) => member.city === city.name),
+          );
       } catch {
         if (active) setError("Kunne ikke hente hjelperne. Prøv igjen.");
       } finally {
@@ -91,6 +94,7 @@ export default function WinterRequest({
 
   return (
     <form
+      className={step === 4 ? "winter-review" : undefined}
       onSubmit={async (event) => {
         event.preventDefault();
         if (busy) return;
@@ -177,16 +181,13 @@ export default function WinterRequest({
           {loading && <p role="status">Henter hjelpere …</p>}
           {!loading && !error && !members.length && (
             <p className="privacy">
-              Ingen i {city.name} har valgt å være synlige som hjelpere ennå.
-              Brukere kan slå dette på under Min profil → Synlig som hjelper.
+              Ingen andre i {city.name} har fullført profilen sin ennå.
             </p>
           )}
           <fieldset className="worker-list">
             <legend className="sr-only">Velg hjelper</legend>
             {[...members]
-              .sort(
-                (a, b) => a.full_name.localeCompare(b.full_name, "nb"),
-              )
+              .sort((a, b) => a.full_name.localeCompare(b.full_name, "nb"))
               .map((member) => (
                 <div className="helper-result-card" key={member.member_id}>
                   <label className="worker-card">
@@ -358,7 +359,7 @@ export default function WinterRequest({
         </>
       )}
       {step === 4 && (
-        <>
+        <div className="winter-review-panel">
           <dl className="summary winter-review-summary">
             <dt>Oppgaver</dt>
             <dd>
@@ -381,12 +382,12 @@ export default function WinterRequest({
             <dt>Tid på dagen</dt>
             <dd>{time}</dd>
           </dl>
-          <p className="note">
+          <p className="note winter-review-disclosure">
             Forespørselen sendes bare til den valgte hjelperen. Navn og by er
             synlige, men adressen din deles ikke automatisk. Tidspunkt og
             eventuelle utgifter må avtales før jobben bekreftes.
           </p>
-        </>
+        </div>
       )}
       {error && (
         <p className="account-error" role="alert">

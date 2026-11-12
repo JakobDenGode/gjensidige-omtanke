@@ -8,7 +8,7 @@ create temporary table fixture(id uuid);grant all on fixture to authenticated;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000081',true);
 do $$begin
- if (select count(*) from public.available_helpers() where member_id in ('00000000-0000-4000-8000-000000000082','00000000-0000-4000-8000-000000000083'))<>1 then raise exception 'Private account exposed';end if;
+ if (select count(*) from public.available_helpers() where member_id in ('00000000-0000-4000-8000-000000000082','00000000-0000-4000-8000-000000000083'))<>2 then raise exception 'Completed accounts missing from directory';end if;
  if exists(select 1 from public.available_helpers() where member_id='00000000-0000-4000-8000-000000000082' and phone is not null) then raise exception 'Phone leak';end if;
 end $$;
 insert into fixture select public.create_directory_request(jsonb_build_object('kind','request','category','Snømåking','tasks',jsonb_build_array('Strø glatte partier'),'preferred_dates',jsonb_build_array((now() at time zone 'Europe/Oslo')::date+1),'time_of_day','Fleksibel'),'00000000-0000-4000-8000-000000000082');
