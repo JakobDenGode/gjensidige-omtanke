@@ -4,6 +4,10 @@ insert into auth.users (id) values
  ('00000000-0000-4000-8000-000000000012'),
  ('00000000-0000-4000-8000-000000000013');
 create temporary table test_code (code text);
+insert into public.customer_profiles (user_id,city,full_name,preferences_completed) values
+ ('00000000-0000-4000-8000-000000000011','Oslo','Test User',true),
+ ('00000000-0000-4000-8000-000000000012','Oslo','Test Friend',true),
+ ('00000000-0000-4000-8000-000000000013','Oslo','Second Friend',true);
 grant all on test_code to authenticated;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000011', true);

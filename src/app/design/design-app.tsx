@@ -6,6 +6,8 @@ import { AccountMenu, SavedRequests, useAccount } from "./account";
 import Connections from "./connections";
 import SpeechInput from "./speech-input";
 import WeatherAlert from "./weather-alert";
+import NetworkTasks, { NetworkRecipients } from "./network-tasks";
+import { useCity } from "./city-profile";
 import {
   ExampleDevices,
   ExampleFriendView,
@@ -46,7 +48,11 @@ const groups: { name: string; icon: IconName; tasks: string[] }[] = [
   {
     name: "Snømåking",
     icon: "home",
-    tasks: ["Måke inngang og gangvei", "Måke innkjørselen", "Strø glatte partier"],
+    tasks: [
+      "Måke inngang og gangvei",
+      "Måke innkjørselen",
+      "Strø glatte partier",
+    ],
   },
   {
     name: "Praktiske småting",
@@ -160,6 +166,8 @@ const navigation: { page: Page; label: string; icon: IconName }[] = [
 
 export default function DesignApp() {
   const { user, saveRequest } = useAccount();
+  const { profile } = useCity();
+  const [recipients, setRecipients] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const savingLock = useRef(false);
@@ -212,6 +220,7 @@ export default function DesignApp() {
   }
 
   function startFlow(nextMode: "request" | "offer", draft = "") {
+    setRecipients([]);
     if (modal === "page") setParents((current) => [...current, page]);
     setProfessional(null);
     setExampleComplete(false);
@@ -250,6 +259,7 @@ export default function DesignApp() {
   }
 
   function startSnowRequest() {
+    setRecipients([]);
     setProfessional(null);
     setMode("request");
     setCategory(groups[0]);
@@ -508,6 +518,7 @@ export default function DesignApp() {
               {page === "appointments" && (
                 <>
                   <SavedRequests />
+                  <NetworkTasks />
                   <h3 className="example-section-title">
                     Eksempelavtaler – ikke bestilte timer
                   </h3>
@@ -590,13 +601,16 @@ export default function DesignApp() {
                 setSaving(true);
                 setSaveError("");
                 try {
-                  await saveRequest({
-                    kind: mode,
-                    category: category.name,
-                    task,
-                    timing,
-                    description: description.trim(),
-                  });
+                  await saveRequest(
+                    {
+                      kind: mode,
+                      category: category.name,
+                      task,
+                      timing,
+                      description: description.trim(),
+                    },
+                    mode === "request" ? recipients : [],
+                  );
                   setTask("");
                   setModal("complete");
                 } catch (error) {
@@ -613,24 +627,41 @@ export default function DesignApp() {
             >
               {step === 1 && (
                 <div className="options">
-                  {groups.map((group) => (
-                    <button
-                      type="button"
-                      className="option"
-                      key={group.name}
-                      onClick={() => {
-                        setCategory(group);
-                        setTask("");
-                        setStep(2);
-                      }}
-                    >
-                      <span>
-                        <Icon name={group.icon} />
-                        {group.name}
-                      </span>
-                      <Icon name="arrow" />
-                    </button>
-                  ))}
+                  {[...groups]
+                    .sort((a, b) => {
+                      const preferred =
+                        mode === "offer"
+                          ? profile.can_help
+                          : profile.needs_help;
+                      return (
+                        Number(preferred.includes(b.name)) -
+                        Number(preferred.includes(a.name))
+                      );
+                    })
+                    .map((group) => (
+                      <button
+                        type="button"
+                        className="option"
+                        key={group.name}
+                        onClick={() => {
+                          setCategory(group);
+                          setTask("");
+                          setStep(2);
+                        }}
+                      >
+                        <span>
+                          <Icon name={group.icon} />
+                          {group.name}
+                          {(mode === "offer"
+                            ? profile.can_help
+                            : profile.needs_help
+                          ).includes(group.name) && (
+                            <small>Valgt i profilen din</small>
+                          )}
+                        </span>
+                        <Icon name="arrow" />
+                      </button>
+                    ))}
                 </div>
               )}
               {step === 2 && (
@@ -726,11 +757,19 @@ export default function DesignApp() {
                       </>
                     )}
                   </dl>
+                  {!professional && mode === "request" && (
+                    <NetworkRecipients
+                      category={category.name}
+                      selected={recipients}
+                      onChange={setRecipients}
+                      disabled={saving}
+                    />
+                  )}
                   <p className="note">
                     {professional
                       ? "Demonstrasjon av betalt hjelp. Ingen forespørsel sendes eller lagres. Du må få se tilbyder, pris og vilkår før en reell bestilling."
                       : user
-                        ? "Lagres privat på kontoen din. Ingen hjelper tildeles automatisk. Ikke legg inn helseopplysninger."
+                        ? "Lagres på kontoen din og deles bare med vennene du velger. Ingen hjelper tildeles automatisk. Ikke legg inn helseopplysninger eller private kontaktdetaljer i beskrivelsen."
                         : "Lukk vinduet og logg inn øverst på siden. Velg deretter «Fortsett med utkastet ditt» for å lagre."}
                   </p>
                 </>
@@ -824,7 +863,9 @@ export default function DesignApp() {
               <p>
                 {exampleComplete
                   ? "Dette var en demonstrasjon. Ingenting er sendt, bestilt eller lagret."
-                  : "Forespørselen er lagret under Mine avtaler. Ingen hjelper er tildelt eller avtale bestilt."}
+                  : recipients.length && mode === "request"
+                    ? "Forespørselen er lagret og sendt til de valgte vennene. Du finner svar under Mine avtaler. Tid og sted må avtales separat."
+                    : "Forespørselen er lagret privat under Mine avtaler. Ingen hjelper er tildelt eller avtale bestilt."}
               </p>
               <button
                 className="button primary"

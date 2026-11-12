@@ -26,7 +26,7 @@ type SavedRequest = RequestDraft & {
 };
 const AccountContext = createContext<{
   user: User | null;
-  saveRequest: (draft: RequestDraft) => Promise<void>;
+  saveRequest: (draft: RequestDraft, recipients?: string[]) => Promise<void>;
   requests: SavedRequest[];
   loading: boolean;
   listError: string;
@@ -67,10 +67,17 @@ export function AccountMenu({
       <div id="account-dropdown" className="account-dropdown" popover="auto">
         <h2>Din konto</h2>
         <p className="account-email">{user?.email}</p>
-        <button className="text-button" onClick={(event) => {
-          event.currentTarget.closest<HTMLElement>("[popover]")?.hidePopover();
-          editCity();
-        }}>Endre by ({city.name})</button>
+        <button
+          className="text-button"
+          onClick={(event) => {
+            event.currentTarget
+              .closest<HTMLElement>("[popover]")
+              ?.hidePopover();
+            editCity();
+          }}
+        >
+          Min profil · {city.name}
+        </button>
         {[
           ["Mine avtaler og forespørsler", onRequests],
           ["Mine venner", onConnections],
@@ -184,7 +191,7 @@ export default function Account({ children }: { children: ReactNode }) {
     };
   }, [user, revision]);
 
-  async function saveRequest(draft: RequestDraft) {
+  async function saveRequest(draft: RequestDraft, recipients: string[] = []) {
     if (!user)
       throw new Error(
         "Logg inn øverst på siden før du lagrer. Det du har fylt ut blir beholdt.",
@@ -193,11 +200,10 @@ export default function Account({ children }: { children: ReactNode }) {
       throw new Error(
         "Velg en oppgave og bruk maksimalt 2000 tegn i beskrivelsen.",
       );
-    const { error } = await createSupabaseClient()
-      .from("help_requests")
-      .insert({ ...draft, user_id: user.id })
-      .select("id")
-      .single();
+    const { error } = await createSupabaseClient().rpc(
+      "create_network_request",
+      { draft, recipients },
+    );
     if (error)
       throw new Error(
         "Kunne ikke lagre. Kontroller tilkoblingen og at du fortsatt er logget inn, og prøv igjen.",
@@ -298,19 +304,29 @@ export default function Account({ children }: { children: ReactNode }) {
                           "Sjekk e-posten din for å bekrefte kontoen. Logg deretter inn her. Hvis adressen allerede er registrert, kan du logge inn.",
                         );
                     } catch (error) {
-                      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+                      const code =
+                        error && typeof error === "object" && "code" in error
+                          ? error.code
+                          : undefined;
                       const authErrors: Record<string, string> = {
-                        over_email_send_rate_limit: "E-posttjenesten har nådd grensen for bekreftelsesmeldinger. Dette skyldes ikke e-postadressen eller passordet ditt. Prøv senere; tjenesten må få økt sendekapasitet før alle kan registrere seg.",
-                        over_request_rate_limit: "For mange forsøk på kort tid. Vent litt før du prøver igjen.",
-                        email_not_confirmed: "Bekreft e-postadressen via lenken i e-posten før du logger inn. Sjekk også søppelpost.",
-                        email_address_not_authorized: "E-posttjenesten tillater ikke sending til denne adressen ennå. Tjenesten må konfigurere e-postlevering for nye brukere.",
-                        weak_password: "Passordet oppfyller ikke sikkerhetskravene. Velg et sterkere passord med minst 8 tegn.",
-                        signup_disabled: "Registrering av nye kontoer er midlertidig deaktivert.",
+                        over_email_send_rate_limit:
+                          "E-posttjenesten har nådd grensen for bekreftelsesmeldinger. Dette skyldes ikke e-postadressen eller passordet ditt. Prøv senere; tjenesten må få økt sendekapasitet før alle kan registrere seg.",
+                        over_request_rate_limit:
+                          "For mange forsøk på kort tid. Vent litt før du prøver igjen.",
+                        email_not_confirmed:
+                          "Bekreft e-postadressen via lenken i e-posten før du logger inn. Sjekk også søppelpost.",
+                        email_address_not_authorized:
+                          "E-posttjenesten tillater ikke sending til denne adressen ennå. Tjenesten må konfigurere e-postlevering for nye brukere.",
+                        weak_password:
+                          "Passordet oppfyller ikke sikkerhetskravene. Velg et sterkere passord med minst 8 tegn.",
+                        signup_disabled:
+                          "Registrering av nye kontoer er midlertidig deaktivert.",
                       };
                       setError(
-                        (typeof code === "string" && authErrors[code]) || (authMode === "signup"
-                          ? "Kunne ikke opprette konto. Bruk en gyldig e-post og minst 8 tegn i passordet. Prøv igjen senere hvis du har gjort mange forsøk."
-                          : "Kunne ikke logge inn. Kontroller e-post, passord og at e-posten er bekreftet."),
+                        (typeof code === "string" && authErrors[code]) ||
+                          (authMode === "signup"
+                            ? "Kunne ikke opprette konto. Bruk en gyldig e-post og minst 8 tegn i passordet. Prøv igjen senere hvis du har gjort mange forsøk."
+                            : "Kunne ikke logge inn. Kontroller e-post, passord og at e-posten er bekreftet."),
                       );
                     } finally {
                       setBusy(false);
@@ -376,7 +392,9 @@ export default function Account({ children }: { children: ReactNode }) {
           </main>
         </>
       ) : (
-        <CityProfile key={user.id} userId={user.id}>{children}</CityProfile>
+        <CityProfile key={user.id} userId={user.id}>
+          {children}
+        </CityProfile>
       )}
     </AccountContext.Provider>
   );

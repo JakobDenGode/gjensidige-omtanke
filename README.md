@@ -100,13 +100,42 @@ for pull requests. The Vercel dashboard shows the assigned public URL.
 
 ### User–Friend Connections
 
+### Customer Profiles and Network Tasks
+
+Onboarding now requires a full name, city, and a review of task preferences.
+Street address, Norwegian postal code, and phone are optional and owner-only.
+Users may leave either preference list empty. "Min konto → Min profil" edits all fields.
+Existing city-only profiles are prompted to complete these fields on next entry.
+
+Connected friends can see name, city, and task preferences through a limited RPC;
+they cannot read the underlying profile, street address, postal code, or phone.
+Invitations use the saved profile name, and accounts are linked by the authenticated
+acceptance of a private single-use code, never by matching an address or name.
+Names and email ownership are not verified in the current demo.
+
+The final request step allows selecting one or more friends. No recipients means
+a private request. Sharing and creation happen atomically through an RPC that
+checks every recipient against the current network. Friends see assigned requests
+under "Mine avtaler" and can say whether they can help; owners can review replies
+there. A positive response is not a booking or exclusive task assignment.
+Contact and scheduling remain outside the app. No email/push delivery is configured.
+Removing a friend revokes shared-request access while disconnected. Reconnecting
+the same accounts restores access to their earlier shared requests.
+
+Test privacy, sharing, replies, and removal with:
+
+```bash
+npx supabase@latest db query --remote=fiobfnbeiqmdlffntxxv --file supabase/tests/network_tasks_access.sql --yes
+```
+
 Open "Mine venner" in `/design`. A user creates a private invitation code and
 shares it with a friend, who signs into their own account and accepts it.
 Codes are single-use, expire after seven days, and are stored only as hashes.
 Creating a new code replaces the user's previous invitation. Invitations can be revoked.
 A user can connect to multiple friends; roles apply per relationship. Either
 participant can remove a connection with confirmation. Connections are visible
-only to their participants and do not grant access to requests or health data.
+only to their participants; requests are shared only with explicitly selected friends.
+Connections do not grant access to health data.
 Display names are supplied by participants, not verified identities.
 
 Dashboard: https://supabase.com/dashboard/project/fiobfnbeiqmdlffntxxv

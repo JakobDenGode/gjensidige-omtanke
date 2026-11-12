@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
 import { useAccount } from "./account";
+import { useCity } from "./city-profile";
+import type { NetworkMember } from "./network-tasks";
 
 type Connection = {
   id: string;
@@ -14,8 +16,10 @@ type Connection = {
 
 export default function Connections() {
   const { user } = useAccount();
+  const { profile } = useCity();
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [name, setName] = useState("");
+  const name = profile.full_name;
+  const [members, setMembers] = useState<NetworkMember[]>([]);
   const [code, setCode] = useState("");
   const [invitation, setInvitation] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,12 +35,19 @@ export default function Connections() {
       setLoading(true);
       setError("");
       try {
-        const { data, error } = await createSupabaseClient()
+        const supabase = createSupabaseClient();
+        const { data: network, error: networkError } =
+          await supabase.rpc("network_members");
+        if (networkError) throw networkError;
+        const { data, error } = await supabase
           .from("user_friends")
           .select("id,user_id,friend_id,user_name,friend_name")
           .order("created_at");
         if (error) throw error;
-        if (active) setConnections(data as Connection[]);
+        if (active) {
+          setConnections(data as Connection[]);
+          setMembers(network ?? []);
+        }
       } catch {
         if (active)
           setError("Kunne ikke hente vennelisten. Prøv å oppdatere listen.");
@@ -73,20 +84,15 @@ export default function Connections() {
         Du velger selv hvem du inviterer.
       </p>
       <p className="privacy">
-        Vennene dine får foreløpig ikke tilgang til forespørsler, avtaler eller
-        helseopplysninger.
+        Venner ser navnet ditt, byen din og hvilke oppgaver du kan hjelpe med
+        eller trenger hjelp til. De ser bare forespørsler du velger å sende til
+        dem. Adresse, telefon og helseopplysninger deles ikke automatisk.
       </p>
-      <label htmlFor="connection-name">
-        Navnet ditt (vises til vennene dine)
-      </label>
-      <input
-        id="connection-name"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        maxLength={80}
-        autoComplete="name"
-        disabled={busy}
-      />
+      <p>
+        Du inviterer som <strong>{name}</strong>. Navnet hentes fra profilen
+        din. Del bare koden med personen du ønsker å legge til; navn og e-post
+        er ikke identitetsverifisert.
+      </p>
       <div className="connection-forms">
         <form
           className="request-record"
@@ -162,7 +168,10 @@ export default function Connections() {
               );
               if (error) throw error;
               setCode("");
-              setMessage("Invitasjonen er godtatt. Dere finner nå hverandre i vennelisten.");
+              setInvitation("");
+              setMessage(
+                "Invitasjonen er godtatt. Dere finner nå hverandre i vennelisten.",
+              );
               setRevision((value) => value + 1);
             });
           }}
@@ -205,7 +214,10 @@ export default function Connections() {
       </button>
       {loading && <p role="status">Henter vennelisten …</p>}
       {!loading && !error && !connections.length && (
-        <p>Vennelisten din er tom. Inviter en venn eller godta en invitasjon for å komme i gang.</p>
+        <p>
+          Vennelisten din er tom. Inviter en venn eller godta en invitasjon for
+          å komme i gang.
+        </p>
       )}
       <div className="friends-grid">
         {connections
@@ -216,12 +228,30 @@ export default function Connections() {
           )
           .map((connection) => {
             const isUser = connection.user_id === user?.id;
-            const otherName = isUser
-              ? connection.friend_name
-              : connection.user_name;
+            const member = members.find(
+              (item) =>
+                item.member_id ===
+                (isUser ? connection.friend_id : connection.user_id),
+            );
+            const otherName =
+              member?.full_name ||
+              (isUser ? connection.friend_name : connection.user_name);
             return (
               <article className="request-record" key={connection.id}>
                 <h3>{otherName}</h3>
+                {member && (
+                  <>
+                    <p>{member.city}</p>
+                    <p>
+                      Kan hjelpe med:{" "}
+                      {member.can_help.join(", ") || "Ikke oppgitt"}
+                    </p>
+                    <p>
+                      Ønsker hjelp til:{" "}
+                      {member.needs_help.join(", ") || "Ikke oppgitt"}
+                    </p>
+                  </>
+                )}
                 <span className="tag">{isUser ? "Venn" : "Bruker"}</span>
                 <p>
                   {isUser
@@ -231,7 +261,9 @@ export default function Connections() {
                 {removing === connection.id ? (
                   <>
                     <p>
-                      Vil du fjerne {otherName} fra vennelisten? Dere blir fjernet fra hverandres vennelister.
+                      Vil du fjerne {otherName} fra vennelisten? Dere blir
+                      fjernet fra hverandres vennelister. Dere mister også
+                      tilgang til forespørsler dere har delt med hverandre.
                     </p>
                     <button
                       className="button danger"
@@ -247,7 +279,9 @@ export default function Connections() {
                           if (error) throw error;
                           setRemoving(null);
                           setRevision((value) => value + 1);
-                          setMessage(`${otherName} er fjernet fra vennelisten.`);
+                          setMessage(
+                            `${otherName} er fjernet fra vennelisten.`,
+                          );
                         })
                       }
                     >
