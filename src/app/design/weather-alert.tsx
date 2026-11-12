@@ -53,7 +53,7 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
     </div>}
     {weather?.helpSuggested && <button className="button weather-notification-action" onClick={onHelp}>Finn hjelp<span className="sr-only"> til snømåking</span></button>}
     <details className="weather-notification-details"><summary>Om værvarselet</summary>
-    <p className="note">Basert på byen du har lagret på kontoen din. Du kan endre den under Min konto → Min profil.</p>
+    <p className="note">Basert på byen du har lagret på kontoen din. Du kan endre den under Min profil → Rediger profil.</p>
     {weather && <>
       {weather.helpSuggested && <p className="note">Varselet viser snø eller sludd i timen som starter {new Date(weather.winterAt!).toLocaleString("nb-NO", { timeZone: "Europe/Oslo", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}. Sludd er en blanding av regn og snø.</p>}
       {!weather.completeCoverage && <p className="note">Vi har ikke sammenhengende timevarsler for hele det neste døgnet.</p>}

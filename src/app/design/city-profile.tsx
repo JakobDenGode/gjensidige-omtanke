@@ -125,7 +125,7 @@ export default function CityProfile({
         </p></details>
         <p className="note">
           Byen brukes også til værvarsler fra Meteorologisk institutt. Du kan
-          endre profilen senere under Min konto.
+          endre opplysningene senere under Min profil.
         </p>
         {!ready ? (
           <>

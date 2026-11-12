@@ -62,10 +62,11 @@ export function AccountMenu({
   return (
     <div className="account-menu">
       <button className="account-menu-trigger" popoverTarget="account-dropdown">
-        Min konto <span aria-hidden="true">&#9662;</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2" /></svg>
+        Min profil <span aria-hidden="true">&#9662;</span>
       </button>
       <div id="account-dropdown" className="account-dropdown" popover="auto">
-        <h2>Din konto</h2>
+        <h2>Min profil</h2>
         <p className="account-email">{user?.email}</p>
         <button
           className="text-button"
@@ -76,7 +77,7 @@ export function AccountMenu({
             editCity();
           }}
         >
-          Min profil · {city.name}
+          Rediger profil · {city.name}
         </button>
         {[
           ["Mine avtaler og forespørsler", onRequests],
