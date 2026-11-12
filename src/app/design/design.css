@@ -8,6 +8,22 @@
   color: var(--builders-color-blue-700);
   font-size: 1.25rem;
 }
+.design-app .profile-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  flex-shrink: 0;
+  background: var(--builders-color-blue-100);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  font-size: 1.75rem;
+}
+.design-app .profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .design-app *,
 .design-app *::before,
 .design-app *::after {
@@ -117,7 +133,7 @@
   text-align: left;
 }
 .design-app .request-card {
-  background: var(--design-yellow);
+  background: var(--builders-color-blue-100);
 }
 .design-app .icon-circle {
   display: grid;

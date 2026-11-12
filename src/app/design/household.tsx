@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { Avatar } from "./profile-photo";
 type Member = {
   household_name: string;
   owner_id: string;
@@ -66,6 +67,7 @@ export default function Household({ userId }: { userId: string }) {
           <h3>{members[0].household_name}</h3>
           {members.map((m) => (
             <div key={m.member_id}>
+              <Avatar userId={m.member_id} name={m.full_name} />
               <h3>{m.full_name}</h3>
               <p>Kan bidra: {m.can_help.join(", ") || "Ikke oppgitt"}</p>
               <p>Ønsker hjelp: {m.needs_help.join(", ") || "Ikke oppgitt"}</p>

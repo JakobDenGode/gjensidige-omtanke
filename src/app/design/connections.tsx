@@ -5,6 +5,7 @@ import { createSupabaseClient } from "@/lib/supabase";
 import { useAccount } from "./account";
 import { useCity } from "./city-profile";
 import type { NetworkMember } from "./network-tasks";
+import { Avatar } from "./profile-photo";
 
 type Connection = {
   id: string;
@@ -238,6 +239,10 @@ export default function Connections() {
               (isUser ? connection.friend_name : connection.user_name);
             return (
               <article className="request-record" key={connection.id}>
+                <Avatar
+                  userId={isUser ? connection.friend_id : connection.user_id}
+                  name={otherName}
+                />
                 <h3>{otherName}</h3>
                 {member && (
                   <>

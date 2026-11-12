@@ -11,6 +11,20 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+### Profile Pictures
+
+Min profil supports uploading, replacing, and removing an optional photo. This
+uses the existing Supabase Storage service, not a new paid provider; storage and
+bandwidth still count against the project's plan quotas. Input supports JPEG,
+PNG, or WebP up to 5 MB, re-encoded in the browser to a centre-cropped 256px JPEG
+without original metadata. One object per user prevents accumulating old versions.
+
+The `profile-photos` bucket is private. Owners can upload/delete only their own
+`<user-id>/avatar.jpg`; current friends and household members can view images via
+60-second signed URLs. Already-issued links remain valid until they expire after
+a friendship ends. Photos appear in friends, households, and helper selection;
+missing photos fall back to initials. This POC has no moderation or malware scanner.
+
 ### Households, Reviews, and Property Advice
 
 "Min profil" supports home type, a basement flag, a user-reported current snow

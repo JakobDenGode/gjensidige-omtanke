@@ -11,6 +11,7 @@ import {
 import { useAccount } from "./account";
 import type { NetworkMember } from "./network-tasks";
 import { HelperRating } from "./task-reviews";
+import { Avatar } from "./profile-photo";
 
 export default function WinterRequest({
   onClose,
@@ -176,9 +177,7 @@ export default function WinterRequest({
               <div key={member.member_id}>
                 <label className="worker-card">
                   <span className="worker-heading">
-                    <span className="worker-avatar" aria-hidden="true">
-                      {(member.full_name || "V")[0]}
-                    </span>
+                    <Avatar userId={member.member_id} name={member.full_name} />
                     <span className="worker-info">
                       <span className="worker-name">
                         {member.full_name || "Venn uten navn"}

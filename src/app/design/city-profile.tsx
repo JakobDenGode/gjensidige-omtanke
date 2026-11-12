@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import ProfileNavigation from "./profile-navigation";
 import Household from "./household";
 import BrandLogo from "../brand-logo";
+import ProfilePhoto from "./profile-photo";
 
 type Profile = {
   city: string;
@@ -128,7 +129,9 @@ export default function CityProfile({
     <>
       <header className="design-header">
         <div className="header-inner">
-          <span className="brand"><BrandLogo /></span>
+          <span className="brand">
+            <BrandLogo />
+          </span>
         </div>
       </header>
       <main className="login-page profile-onboarding">
@@ -410,7 +413,12 @@ export default function CityProfile({
             )}
           </form>
         )}
-        {profilePage && ready && <Household userId={userId} />}
+        {profilePage && ready && (
+          <>
+            <ProfilePhoto userId={userId} name={profile.full_name} />
+            <Household userId={userId} />
+          </>
+        )}
         {message && <p role="status">{message}</p>}
         {error && (
           <p role="alert" className="account-error">
