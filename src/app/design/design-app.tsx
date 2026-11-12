@@ -110,7 +110,6 @@ export default function DesignApp() {
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState("");
-  const [shared, setShared] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const homeHeading = useRef<HTMLHeadingElement>(null);
@@ -256,7 +255,7 @@ export default function DesignApp() {
       </nav>
       <dialog
         ref={dialog}
-        className="design-dialog"
+        className={`design-dialog${view === "complete" ? "request-success-dialog" : ""}`}
         aria-labelledby="design-dialog-title"
         onCancel={(event) => {
           event.preventDefault();
@@ -287,7 +286,7 @@ export default function DesignApp() {
               <Icon name="check" />
             </span>
           )}
-          <h2 id="design-dialog-title" ref={heading} tabIndex={-1}>
+           <h2 id="design-dialog-title" ref={heading} tabIndex={-1} className={view === "complete" ? "sr-only" : undefined}>
             {view ? titles[view] : ""}
           </h2>
           {view === "appointments" && (
@@ -323,7 +322,6 @@ export default function DesignApp() {
               onStep={setStep}
               onBusy={setSaving}
               onSaved={() => {
-                setShared(true);
                 setView("complete");
               }}
             />
@@ -355,7 +353,6 @@ export default function DesignApp() {
                     },
                     recipients,
                   );
-                  setShared(Boolean(recipients.length));
                   setView("complete");
                 } catch (error) {
                   setError(
@@ -514,21 +511,6 @@ export default function DesignApp() {
                 </div>
               )}
             </form>
-          )}
-          {view === "complete" && (
-            <>
-              <p>
-                {shared
-                  ? "Forespørselen er sendt til de valgte vennene. Du finner svar under Mine avtaler. Tid og sted må avtales separat."
-                  : "Forespørselen er lagret privat under Mine avtaler. Ingen hjelper er tildelt."}
-              </p>
-              <button
-                className="button primary"
-                onClick={() => setView("appointments")}
-              >
-                Se mine forespørsler
-              </button>
-            </>
           )}
         </div>
       </dialog>

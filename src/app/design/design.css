@@ -8,6 +8,8 @@
   color: var(--builders-color-blue-700);
   font-size: 1.25rem;
 }
+.design-app .request-success-dialog .success-icon { margin: 2rem auto 3rem; width: 7rem; height: 7rem; color: var(--builders-color-success-300); }
+.design-app .request-success-dialog .success-icon svg { width: 4rem; height: 4rem; stroke-width: 2.5; }
 .design-app .helper-result-card {
   border: 1px solid var(--design-line);
   border-radius: var(--design-radius);
