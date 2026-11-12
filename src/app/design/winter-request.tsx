@@ -53,7 +53,6 @@ export default function WinterRequest({
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
-  const [missingLocations, setMissingLocations] = useState(0);
   useEffect(() => {
     let active = true;
     async function load() {
@@ -71,7 +70,6 @@ export default function WinterRequest({
         if (!response.ok) throw new Error(data.error);
         if (active) {
           setMembers(data.helpers ?? []);
-          setMissingLocations(data.missingLocations ?? 0);
         }
       } catch (error) {
         if (active)
@@ -199,16 +197,6 @@ export default function WinterRequest({
       {step === 2 && (
         <>
           <p>Naboer i alle aldre kan bidra</p>
-          <p className="note">
-            Avstandene er omtrentlige og beregnet mellom postområder. De er ikke
-            kjørelengder.
-          </p>
-          {!loading && missingLocations > 0 && (
-            <p className="note">
-              {missingLocations} hjelpere er utelatt fordi postnummeret mangler
-              eller ikke kunne stedfestes.
-            </p>
-          )}
           {loading && <p role="status">Henter hjelpere …</p>}
           {!loading && !error && !members.length && (
             <p className="privacy">
