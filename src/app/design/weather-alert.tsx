@@ -86,7 +86,7 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
         </span>
         <h2 id="live-weather-title" className="live-weather-title">
           {thawAdvice
-            ? "Snøen kan komme til å smelte nå"
+             ? "Snøen kan komme til å smelte nå"
             : weather?.helpSuggested
               ? `Det er meldt ${precipitation}`
               : `Været i ${city.name}`}
@@ -103,21 +103,22 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
           <p className="weather-notification-description">
             {thawAdvice
               ? profile.has_basement
-                  ? "Smeltevann kan renne inn i kjelleren din. Måk ved behov snø bort fra husveggen og hold sluk åpne for å redusere risikoen."
-                : "Plussgrader og snø eller sludd kan gi smeltevann. Hold sluk åpne og rydd våt snø der det er nødvendig."
+                ? "Smeltevann kan renne inn i kjelleren din. Måk ved behov snø bort fra husveggen og hold sluk åpne for å redusere risikoen."
+                : "Plussgrader kan gi smeltevann. Hold sluk åpne og rydd våt snø der det er nødvendig."
               : weather.helpSuggested
                 ? "Trenger du hjelp til å måke eller rydde våt snø? Spør noen i nettverket ditt."
                 : weather.completeCoverage
                   ? "Det er ikke meldt snø eller sludd de neste 24 timene."
                   : "Det er ingen snø- eller sluddsymboler i de tilgjengelige timene."}
           </p>
-          <p className="weather-notification-location">
+          {!thawAdvice && <p className="weather-notification-location">
             Værvarsel for {city.name}
-          </p>
+          </p>}
           {thawAdvice && (
             <p className="note">
-              {`Hjemmet ditt${profile.street_address ? `, ${profile.street_address}` : ""}${profile.has_basement ? ", har kjeller ifølge profilen din" : ""}. `}
-              {profile.insurer ? `Forsikring hos ${profile.insurer} er egenoppgitt og ikke verifisert.` : ""}
+              {profile.street_address ? `Hjemmet ditt, ${profile.street_address}. ` : ""}
+              {profile.has_basement ? "Du har oppgitt at boligen har kjeller. " : ""}
+              {profile.insurer ? `Forsikringsselskap: ${profile.insurer} (egenoppgitt, ikke verifisert).` : ""}
             </p>
           )}
         </div>

@@ -12,7 +12,6 @@ import { useAccount } from "./account";
 import { Avatar } from "./profile-photo";
 import { useCity } from "./city-profile";
 import { formatDistance } from "@/lib/distance";
-import DemoReview from "./demo-review";
 
 type Helper = {
   member_id: string;
@@ -271,7 +270,7 @@ export default function WinterRequest({
                         )}
                       </>
                     ) : (
-                      <DemoReview id={member.member_id} name={member.full_name} />
+                      <p>Ingen anmeldelser ennå</p>
                     )}
                   </div>
                 </div>
