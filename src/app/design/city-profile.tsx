@@ -30,6 +30,8 @@ type Profile = {
   has_basement: boolean;
   snow_on_property: boolean;
   insurer: string;
+  helper_visible: boolean;
+  helper_phone_visible: boolean;
 };
 const emptyProfile: Profile = {
   city: "",
@@ -44,9 +46,11 @@ const emptyProfile: Profile = {
   has_basement: false,
   snow_on_property: false,
   insurer: "",
+  helper_visible: false,
+  helper_phone_visible: false,
 };
 const fields =
-  "city,full_name,street_address,postal_code,phone,can_help,needs_help,preferences_completed,home_type,has_basement,snow_on_property,insurer";
+  "city,full_name,street_address,postal_code,phone,can_help,needs_help,preferences_completed,home_type,has_basement,snow_on_property,insurer,helper_visible,helper_phone_visible";
 const CityContext = createContext<{
   city: City;
   profile: Profile;
@@ -369,7 +373,10 @@ export default function CityProfile({
                 </p>
                 <div className="profile-checkbox-grid">
                   {taskAreas.map((area) => (
-                    <label className="profile-checkbox profile-task-checkbox" key={area}>
+                    <label
+                      className="profile-checkbox profile-task-checkbox"
+                      key={area}
+                    >
                       <input
                         type="checkbox"
                         checked={draft[field].includes(area)}
@@ -390,6 +397,39 @@ export default function CityProfile({
                 </div>
               </fieldset>
             ))}
+            <section className="profile-basics">
+              <h2>Synlig som hjelper</h2>
+              <p className="note">
+                Andre innloggede brukere kan finne deg og sende deg forespørsler
+                når du velger dette. Navn, by, oppgaver, bilde og vurderinger
+                vises, men ikke adresse eller hjelpebehov.
+              </p>
+              <label className="profile-checkbox">
+                <input
+                  type="checkbox"
+                  checked={draft.helper_visible}
+                  disabled={busy}
+                  onChange={(event) =>
+                    setDraft({ ...draft, helper_visible: event.target.checked })
+                  }
+                />
+                <span>Vis meg i hjelperlisten</span>
+              </label>
+              <label className="profile-checkbox">
+                <input
+                  type="checkbox"
+                  checked={draft.helper_phone_visible}
+                  disabled={busy || !draft.helper_visible}
+                  onChange={(event) =>
+                    setDraft({
+                      ...draft,
+                      helper_phone_visible: event.target.checked,
+                    })
+                  }
+                />
+                <span>Vis også telefonnummeret mitt i hjelperlisten</span>
+              </label>
+            </section>
             <button
               className="button primary"
               disabled={busy || !draft.city || !draft.full_name.trim()}

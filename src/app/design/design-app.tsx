@@ -11,6 +11,7 @@ import { useCity } from "./city-profile";
 import Contributions from "./contributions";
 import WinterRequest from "./winter-request";
 import TaskReviews from "./task-reviews";
+import Appointments from "./appointments";
 import BrandLogo from "../brand-logo";
 
 const icons = {
@@ -291,9 +292,13 @@ export default function DesignApp() {
           </h2>
           {view === "appointments" && (
             <>
-              <SavedRequests />
-              <NetworkTasks />
-              <TaskReviews />
+              <Appointments />
+              <details className="appointment-request-details">
+                <summary>Forespørsler, svar og vurderinger</summary>
+                <SavedRequests />
+                <NetworkTasks />
+                <TaskReviews />
+              </details>
             </>
           )}
           {view === "friends" && <Connections />}

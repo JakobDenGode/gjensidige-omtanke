@@ -9,10 +9,21 @@ import {
   dateLabel,
 } from "@/lib/winter-tasks";
 import { useAccount } from "./account";
-import type { NetworkMember } from "./network-tasks";
-import { HelperRating } from "./task-reviews";
 import { Avatar } from "./profile-photo";
 import WinterTaskIcon from "./winter-task-icon";
+import { useCity } from "./city-profile";
+
+type Helper = {
+  member_id: string;
+  full_name: string;
+  city: string;
+  can_help: string[];
+  phone: string | null;
+  rating: number | null;
+  review_count: number;
+  review_comment: string | null;
+  reviewer_name: string | null;
+};
 
 export default function WinterRequest({
   onClose,
@@ -26,9 +37,10 @@ export default function WinterRequest({
   onBusy: (busy: boolean) => void;
 }) {
   const { saveRequest } = useAccount();
+  const { city } = useCity();
   const [step, setStep] = useState(1);
   const [tasks, setTasks] = useState<string[]>([]);
-  const [members, setMembers] = useState<NetworkMember[]>([]);
+  const [members, setMembers] = useState<Helper[]>([]);
   const [helper, setHelper] = useState("");
   const [dates, setDates] = useState<string[]>([]);
   const [time, setTime] = useState("Fleksibel");
@@ -45,11 +57,11 @@ export default function WinterRequest({
       setError("");
       try {
         const { data, error } =
-          await createSupabaseClient().rpc("network_members");
+          await createSupabaseClient().rpc("available_helpers");
         if (error) throw error;
         if (active) setMembers(data ?? []);
       } catch {
-        if (active) setError("Kunne ikke hente vennene dine. Prøv igjen.");
+        if (active) setError("Kunne ikke hente hjelperne. Prøv igjen.");
       } finally {
         if (active) setLoading(false);
       }
@@ -88,7 +100,7 @@ export default function WinterRequest({
           return;
         }
         if (step === 2 && !selectedHelper) {
-          setError("Velg en venn som kan hjelpe deg.");
+          setError("Velg en hjelper for å gå videre.");
           return;
         }
         if (
@@ -118,6 +130,7 @@ export default function WinterRequest({
               time_of_day: time,
             },
             [helper],
+            true,
           );
           onSaved();
         } catch (error) {
@@ -163,47 +176,89 @@ export default function WinterRequest({
       {step === 2 && (
         <>
           <p>
-            Velg noen i nettverket ditt. Et ja til forespørselen er ikke en
-            ferdig avtale.
+            Naboer i alle aldre kan bidra. Vi viser alle som har valgt å være
+            synlige. Hjelpere i {city.name} og med snømåking som oppgave vises
+            først. Et ja er ikke en ferdig avtale.
           </p>
-          {loading && <p role="status">Henter venner …</p>}
+          {loading && <p role="status">Henter hjelpere …</p>}
           {!loading && !members.length && (
             <p className="privacy">
-              Du har ingen venner i nettverket ennå. Legg til en venn under Mine
-              venner først.
+              Ingen har valgt å være synlige som hjelpere ennå. Brukere kan slå
+              dette på under Min profil → Synlig som hjelper.
             </p>
           )}
           <fieldset className="worker-list">
             <legend className="sr-only">Velg hjelper</legend>
-            {members.map((member) => (
-              <div key={member.member_id}>
-                <label className="worker-card">
-                  <span className="worker-heading">
-                    <Avatar userId={member.member_id} name={member.full_name} />
-                    <span className="worker-info">
-                      <span className="worker-name">
-                        {member.full_name || "Venn uten navn"}
+            {[...members]
+              .sort(
+                (a, b) =>
+                  Number(b.city === city.name) * 2 +
+                  Number(b.can_help.includes("Snømåking")) -
+                  (Number(a.city === city.name) * 2 +
+                    Number(a.can_help.includes("Snømåking"))),
+              )
+              .map((member) => (
+                <div className="helper-result-card" key={member.member_id}>
+                  <label className="worker-card">
+                    <span className="worker-heading">
+                      <Avatar
+                        userId={member.member_id}
+                        name={member.full_name}
+                      />
+                      <span className="worker-info">
+                        <span className="worker-name">
+                          {member.full_name || "Venn uten navn"}
+                        </span>
+                        <span>{member.city}</span>
                       </span>
-                      <span>{member.city}</span>
+                      <input
+                        type="radio"
+                        name="winter-worker"
+                        value={member.member_id}
+                        checked={helper === member.member_id}
+                        onChange={() => setHelper(member.member_id)}
+                        aria-label={`Velg ${member.full_name || "venn"}`}
+                      />
                     </span>
-                    <input
-                      type="radio"
-                      name="winter-worker"
-                      value={member.member_id}
-                      checked={helper === member.member_id}
-                      onChange={() => setHelper(member.member_id)}
-                      aria-label={`Velg ${member.full_name || "venn"}`}
-                    />
-                  </span>
-                  <span className="worker-specialty">
-                    {member.can_help.includes("Snømåking")
-                      ? "Har sagt at de kan hjelpe med snømåking"
-                      : `Kan hjelpe med: ${member.can_help.join(", ") || "Ikke oppgitt"}`}
-                  </span>
-                </label>
-                <HelperRating id={member.member_id} />
-              </div>
-            ))}
+                    <span className="worker-specialty">
+                      {member.can_help.includes("Snømåking")
+                        ? "Har sagt at de kan hjelpe med snømåking"
+                        : `Kan hjelpe med: ${member.can_help.join(", ") || "Ikke oppgitt"}`}
+                    </span>
+                  </label>
+                  <div className="helper-reputation">
+                    {member.review_count > 0 ? (
+                      <>
+                        <p>
+                          <span aria-hidden="true">&#9733;</span>{" "}
+                          {Number(member.rating).toLocaleString("nb-NO")} av 5 ·{" "}
+                          {member.review_count} vurderinger
+                        </p>
+                        {member.review_comment && (
+                          <blockquote>
+                            «{member.review_comment}»
+                            <cite>{member.reviewer_name}</cite>
+                          </blockquote>
+                        )}
+                      </>
+                    ) : (
+                      <p>Ingen vurderinger ennå</p>
+                    )}
+                  </div>
+                  {member.phone &&
+                    /^\+?[\d\s().-]{5,30}$/.test(member.phone) && (
+                      <a
+                        className="button outline appointment-call"
+                        href={`tel:${member.phone.replace(/[\s().-]/g, "")}`}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="m7 3 3 5-3 3c2 3 3 4 6 6l3-3 5 3c0 3-2 5-5 4C8 19 5 16 3 8c-1-3 1-5 4-5Z" />
+                        </svg>
+                        Ring {member.full_name}
+                      </a>
+                    )}
+                </div>
+              ))}
           </fieldset>
           {error && (
             <button
@@ -211,7 +266,7 @@ export default function WinterRequest({
               type="button"
               onClick={() => setRevision((value) => value + 1)}
             >
-              Prøv å hente venner igjen
+              Prøv å hente hjelpere igjen
             </button>
           )}
         </>

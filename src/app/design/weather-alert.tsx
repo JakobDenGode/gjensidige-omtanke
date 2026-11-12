@@ -55,7 +55,8 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
   }, [city.lat, city.lon, revision]);
 
   const thawAdvice = Boolean(
-    weather?.thawExpected && profile.has_basement && profile.snow_on_property,
+    weather?.thawExpected &&
+    (profile.snow_on_property || weather.sleetExpected || weather.snowExpected),
   );
   const precipitation =
     weather?.snowExpected && weather.sleetExpected
@@ -73,7 +74,7 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
           <svg viewBox="0 0 32 32">
             <path
               d={
-                weather?.snowExpected
+                weather?.snowExpected || thawAdvice
                   ? "M16 3v26M5 9l22 14M5 23 27 9M12 5l4 4 4-4M12 27l4-4 4 4"
                   : "M16 3C13 7 6 15 6 21a10 10 0 0 0 20 0c0-6-7-14-10-18Z"
               }
@@ -82,7 +83,7 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
         </span>
         <h2 id="live-weather-title" className="live-weather-title">
           {thawAdvice
-            ? "Plussgrader kan gi smeltevann"
+            ? "Snøen kan komme til å smelte nå"
             : weather?.helpSuggested
               ? `Det er meldt ${precipitation}`
               : `Været i ${city.name}`}
@@ -98,7 +99,9 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
         <div role="status">
           <p className="weather-notification-description">
             {thawAdvice
-              ? "Du har oppgitt snø på eiendommen og en kjeller. Varselet viser plussgrader. Sjekk at sluk er åpne, og at vann kan renne bort fra huset. Vi har ikke bekreftet flomfare på eiendommen."
+              ? profile.has_basement
+                ? "Plussgrader og snø eller sludd kan gi smeltevann. Hold sluk åpne og flytt snø bort fra husveggen for å redusere risikoen for vann i kjelleren. Vi har ikke bekreftet flomfare på eiendommen."
+                : "Plussgrader og snø eller sludd kan gi smeltevann. Hold sluk åpne og rydd våt snø der det er nødvendig."
               : weather.helpSuggested
                 ? "Trenger du hjelp til å måke eller rydde våt snø? Spør noen i nettverket ditt."
                 : weather.completeCoverage
@@ -108,17 +111,24 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
           <p className="weather-notification-location">
             Værvarsel for {city.name}
           </p>
-          {thawAdvice && profile.insurer && (
+          {thawAdvice && (
             <p className="note">
-              Du har oppgitt {profile.insurer} som forsikringsselskap. Dekning
-              er ikke verifisert; sjekk vilkårene dine før du bestiller hjelp.
+              {profile.street_address
+                ? `Hjemmet ditt, ${profile.street_address}. `
+                : ""}
+              {profile.has_basement
+                ? "Du har oppgitt at boligen har kjeller. "
+                : ""}
+              {profile.insurer
+                ? `Forsikringsselskap: ${profile.insurer} (egenoppgitt, ikke verifisert).`
+                : ""}
             </p>
           )}
         </div>
       )}
       {(weather?.helpSuggested || thawAdvice) && (
         <button className="button weather-notification-action" onClick={onHelp}>
-          Finn hjelp
+          Få hjelp
           <span className="sr-only"> til å rydde snø og holde sluk åpne</span>
         </button>
       )}

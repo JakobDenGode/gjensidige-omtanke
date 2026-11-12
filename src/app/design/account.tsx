@@ -30,7 +30,11 @@ type SavedRequest = RequestDraft & {
 };
 const AccountContext = createContext<{
   user: User | null;
-  saveRequest: (draft: RequestDraft, recipients?: string[]) => Promise<void>;
+  saveRequest: (
+    draft: RequestDraft,
+    recipients?: string[],
+    directory?: boolean,
+  ) => Promise<void>;
   requests: SavedRequest[];
   loading: boolean;
   listError: string;
@@ -110,7 +114,11 @@ export default function Account({ children }: { children: ReactNode }) {
     };
   }, [user, revision]);
 
-  async function saveRequest(draft: RequestDraft, recipients: string[] = []) {
+  async function saveRequest(
+    draft: RequestDraft,
+    recipients: string[] = [],
+    directory = false,
+  ) {
     if (!user)
       throw new Error(
         "Logg inn øverst på siden før du lagrer. Det du har fylt ut blir beholdt.",
@@ -120,8 +128,8 @@ export default function Account({ children }: { children: ReactNode }) {
         "Velg en oppgave og bruk maksimalt 2000 tegn i beskrivelsen.",
       );
     const { error } = await createSupabaseClient().rpc(
-      "create_network_request",
-      { draft, recipients },
+      directory ? "create_directory_request" : "create_network_request",
+      directory ? { draft, helper: recipients[0] } : { draft, recipients },
     );
     if (error)
       throw new Error(
@@ -165,7 +173,9 @@ export default function Account({ children }: { children: ReactNode }) {
         <>
           <header className="design-header">
             <div className="header-inner">
-              <span className="brand"><BrandLogo /></span>
+              <span className="brand">
+                <BrandLogo />
+              </span>
             </div>
           </header>
           <main className="login-page">

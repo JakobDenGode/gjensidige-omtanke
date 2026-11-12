@@ -11,6 +11,30 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+### Helper Directory
+
+Winter requests can now go to opted-in users outside the friend network.
+"Min profil → Synlig som hjelper" enables listing name, city, skills, photo, and
+real review scores/latest review to signed-in users. Phone listing requires a
+separate opt-in. Private addresses, help needs, and email are never listed.
+Existing accounts are not automatically published. All opted-in cities are shown,
+ordered by same city and snow-help skills, not precise geolocation or distance.
+Turning visibility off prevents new requests; already-shared directory requests
+remain accessible to their participants. Requests do not create friendships.
+The weather card describes possible melting, not confirmed flooding or insurance.
+
+### Appointments Between Accounts
+
+Mine avtaler shows pale-blue appointment cards with helping/receiving roles,
+Norwegian date/time, meeting place, and the real friend's name. Users propose
+appointments to connected friends; only the other participant can accept. Pending
+proposals are not shown as confirmed. Either participant can cancel.
+Each person separately opts in to sharing their own profile phone number for an
+appointment. Numbers are exposed only after confirmation while still connected,
+and consent can be withdrawn. Appointments remain in participant history after
+friend removal, but phone access stops. Requests and reviews remain in a separate
+expandable section. No external calendar or email delivery is integrated.
+
 ### Profile Pictures
 
 Min profil supports uploading, replacing, and removing an optional photo. This

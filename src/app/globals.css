@@ -3,7 +3,8 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeSans-Bold.woff2") format("woff2");
+  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeSans-Bold.woff2")
+    format("woff2");
 }
 
 @font-face {
@@ -11,7 +12,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeDisplay-Medium.woff2") format("woff2");
+  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeDisplay-Medium.woff2")
+    format("woff2");
 }
 
 @font-face {
@@ -19,7 +21,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeSans-Regular.woff2") format("woff2");
+  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeSans-Regular.woff2")
+    format("woff2");
 }
 
 /* Local Builders reference values for the styles this app uses. */
@@ -36,7 +39,8 @@
   --builders-unit-60: 3rem;
   --builders-container-xxl: 90rem;
   --builders-container-md: 43.75rem;
-  --builders-font-display: "GjensidigeDisplay", "GjensidigeSans", Helvetica, Arial, sans-serif;
+  --builders-font-display:
+    "GjensidigeDisplay", "GjensidigeSans", Helvetica, Arial, sans-serif;
   --builders-font-sans: "GjensidigeSans", Helvetica, Arial, sans-serif;
   --builders-font-md: clamp(1rem, calc(0.901rem + 0.345vw), 1.25rem);
   --builders-font-title-2: clamp(2.5rem, calc(2.103rem + 1.379vw), 3.5rem);
@@ -57,8 +61,28 @@ body {
   line-height: var(--builders-line-height-150);
 }
 
-.brand-logo { display: block; width: 12rem; max-width: 100%; height: auto; }
-.app-header .brand-logo { margin-bottom: var(--builders-unit-25); }
+.brand-logo {
+  display: block;
+  width: 12rem;
+  max-width: 100%;
+  height: auto;
+}
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--builders-font-display);
+  font-size: clamp(1.125rem, 3vw, 1.5rem);
+  line-height: 1.2;
+}
+.brand-symbol {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+}
+.app-header .brand-logo {
+  margin-bottom: var(--builders-unit-25);
+}
 
 .app-header,
 .app-content {
