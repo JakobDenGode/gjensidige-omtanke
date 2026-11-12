@@ -15,6 +15,7 @@ import Appointments from "./appointments";
 import BrandLogo from "../brand-logo";
 
 const icons = {
+  requests: "M21.5007 7.80005L12.0007 15.8L2.08609 7.32549L12 1.30005L21.5006 7.02635C21.9961 7.30005 22.5007 7.80005 22.5007 8.68774V20.91C22.5007 21.9532 21.6459 22.7989 20.5916 22.7989H3.40977C2.35541 22.7989 1.50068 21.9532 1.50068 20.91V8.68774C1.49621 7.80005 1.49677 7.80005 2.08221 7.32549",
   help: "M3 15h4l4-4h5a2 2 0 0 1 0 4h-4m-5 5h10l5-6M3 12v10h4V12Z",
   offer: "M12 21S2 15 2 8a5 5 0 0 1 10-1A5 5 0 0 1 22 8c0 7-10 13-10 13Z",
   phone:
@@ -33,7 +34,7 @@ const icons = {
 function Icon({ name }: { name: keyof typeof icons }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d={icons[name]} />
+      <path d={icons[name]} strokeWidth={name === "requests" ? 2 : undefined} />
     </svg>
   );
 }
@@ -235,7 +236,7 @@ export default function DesignApp() {
             onClick={() => setView("requests")}
           >
             <span className="icon-circle">
-              <Icon name="help" />
+              <Icon name="requests" />
             </span>
             <span className="card-title">Forespørsler</span>
           </button>
