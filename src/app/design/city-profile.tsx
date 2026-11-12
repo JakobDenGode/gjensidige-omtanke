@@ -110,18 +110,19 @@ export default function CityProfile({
           <span className="brand">Gjensidige Omtanke</span>
         </div>
       </header>
-      <main className="login-page">
+      <main className="login-page profile-onboarding">
+        <p className="eyebrow">Din hverdag, ditt nettverk</p>
         <h1>{editing ? "Min profil" : "Fortell litt om deg selv"}</h1>
         <p>
           Navn og by hjelper vennene dine å kjenne deg igjen. Fortell også hva
           du kan bidra med, og hva du ønsker hjelp til.
         </p>
-        <p className="privacy">
+        <details className="profile-privacy"><summary>Hvem kan se opplysningene mine?</summary><p className="privacy">
           Navn, by og oppgaveønsker er synlige for venner du selv godtar.
           Adresse og telefon er valgfrie og private. Ikke legg inn
           helseopplysninger. E-post og identitet er ikke verifisert i denne
           demoen.
-        </p>
+        </p></details>
         <p className="note">
           Byen brukes også til værvarsler fra Meteorologisk institutt. Du kan
           endre profilen senere under Min konto.
@@ -177,6 +178,8 @@ export default function CityProfile({
               }
             }}
           >
+            <section className="profile-basics" aria-labelledby="profile-basics-title">
+            <h2 id="profile-basics-title">Om deg</h2>
             <label htmlFor="profile-name">Fullt navn</label>
             <input
               id="profile-name"
@@ -204,6 +207,10 @@ export default function CityProfile({
                 <option key={item.name}>{item.name}</option>
               ))}
             </select>
+            </section>
+            <details className="profile-contact">
+            <summary>Adresse og telefon <span>(valgfritt)</span></summary>
+            <div className="profile-contact-fields">
             <label htmlFor="profile-address">
               Gateadresse (valgfritt, privat)
             </label>
@@ -242,8 +249,10 @@ export default function CityProfile({
               maxLength={30}
               disabled={busy}
             />
+            </div>
+            </details>
             {(["can_help", "needs_help"] as const).map((field) => (
-              <fieldset className="choices" key={field}>
+              <fieldset className={`profile-preferences profile-preferences-${field}`} key={field}>
                 <legend>
                   {field === "can_help"
                     ? "Dette kan jeg hjelpe med"
@@ -253,8 +262,9 @@ export default function CityProfile({
                   Velg gjerne flere. Du kan la valgene stå tomme og endre dem
                   senere.
                 </p>
+                <div className="profile-checkbox-grid">
                 {taskAreas.map((area) => (
-                  <label className="choice" key={area}>
+                  <label className="profile-checkbox" key={area}>
                     <input
                       type="checkbox"
                       checked={draft[field].includes(area)}
@@ -271,6 +281,7 @@ export default function CityProfile({
                     <span>{area}</span>
                   </label>
                 ))}
+                </div>
               </fieldset>
             ))}
             <button

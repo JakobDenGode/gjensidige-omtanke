@@ -720,7 +720,7 @@
   min-height: 5rem;
 }
 .design-app .connections-panel > input,
-.design-app .account-form input,
+.design-app .account-form input:not([type="checkbox"]):not([type="radio"]),
 .design-app select {
   font: inherit;
   width: 100%;
@@ -755,6 +755,72 @@
   display: grid;
   gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.design-app .profile-onboarding {
+  --profile-selected: #dcd2fc;
+  --profile-padding: clamp(1rem, 3vw, 1.5rem);
+  max-width: var(--design-width);
+  margin-block: 2rem 4rem;
+}
+.design-app .profile-onboarding > .eyebrow { color: var(--builders-color-purple-700); }
+.design-app .profile-onboarding .account-form { gap: 1.5rem; }
+.design-app .profile-basics,
+.design-app .profile-contact-fields { display: grid; gap: .75rem; }
+.design-app .profile-basics h2 { font-size: 1.5rem; margin-bottom: .25rem; }
+.design-app .profile-contact {
+  padding: .5rem var(--profile-padding);
+  border: 1px solid var(--design-line);
+  border-radius: var(--design-radius);
+}
+.design-app .profile-contact summary { text-decoration: none; }
+.design-app .profile-contact summary span { font-size: 1rem; }
+.design-app .profile-contact-fields { padding-bottom: 1rem; }
+.design-app .profile-preferences {
+  min-width: 0;
+  margin: 0;
+  padding: var(--profile-padding);
+  border: 0;
+  border-radius: var(--design-radius);
+  background: var(--builders-color-blue-100);
+}
+.design-app .profile-preferences-needs_help { background: var(--design-alert); }
+.design-app .profile-preferences legend {
+  float: left;
+  width: 100%;
+  font-family: var(--builders-font-display);
+  font-size: 1.5rem;
+}
+.design-app .profile-preferences > p { clear: both; margin: .5rem 0 1rem; font-size: 1rem; }
+.design-app .profile-checkbox-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .625rem; }
+.design-app .profile-checkbox {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: .75rem;
+  min-height: 3.5rem;
+  padding: .75rem;
+  background: var(--builders-color-white);
+  border: 1px solid var(--design-line);
+  border-radius: var(--builders-radius-sm);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.design-app .profile-checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  accent-color: var(--builders-color-purple-700);
+}
+.design-app .profile-checkbox:has(input:checked) { background: var(--profile-selected); border-color: var(--builders-color-purple-700); }
+.design-app .profile-checkbox:has(input:focus-visible) { outline: 3px solid var(--builders-color-purple-700); outline-offset: 3px; }
+.design-app .profile-checkbox:has(input:disabled) { opacity: .6; cursor: not-allowed; }
+.design-app .profile-privacy { margin-top: 1rem; font-size: 1rem; }
+.design-app .profile-privacy .privacy { margin-top: .5rem; }
+@media (max-width: 380px) {
+  .design-app .profile-checkbox-grid { grid-template-columns: 1fr; }
 }
 .design-app .account-error {
   color: var(--builders-color-error-300);
