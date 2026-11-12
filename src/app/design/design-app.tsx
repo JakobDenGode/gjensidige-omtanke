@@ -160,7 +160,7 @@ export default function DesignApp() {
     friends: "Mine venner",
     contributions: "Jeg kan hjelpe andre",
     support: "Få hjelp",
-    complete: "Forespørselen er lagret",
+    complete: "Ferdig",
     winter:
       step === 1
         ? "Hva trenger du hjelp med?"
@@ -198,11 +198,12 @@ export default function DesignApp() {
         </div>
       </header>
       <main id="design-main" className="design-main">
+        <h1 className="customer-greeting">Hei, {profile.full_name}!</h1>
         <WeatherAlert onHelp={startWinter} />
         <div className="intro">
-          <h1 ref={homeHeading} tabIndex={-1}>
+          <h2 ref={homeHeading} tabIndex={-1}>
             Hva vil du i dag?
-          </h1>
+          </h2>
         </div>
         <div className="action-grid">
           <button className="action-card request-card" onClick={startRequest}>
@@ -229,14 +230,16 @@ export default function DesignApp() {
             </span>
             <span className="card-title">Mine avtaler</span>
           </button>
+          <button
+            className="action-card"
+            onClick={() => setView("requests")}
+          >
+            <span className="icon-circle">
+              <Icon name="help" />
+            </span>
+            <span className="card-title">Forespørsler</span>
+          </button>
         </div>
-        <button
-          className="button outline requests-launch"
-          onClick={() => setView("requests")}
-        >
-          <Icon name="help" />
-          Forespørsler
-        </button>
         <footer className="design-footer">
           <span>Gjensidige</span>
         </footer>
@@ -303,10 +306,10 @@ export default function DesignApp() {
             id="design-dialog-title"
             ref={heading}
             tabIndex={-1}
-            className={view === "complete" ? "sr-only" : undefined}
           >
             {view ? titles[view] : ""}
           </h2>
+          {view === "complete" && <button className="button completion-return" onClick={close}>Tilbake til oversikten</button>}
           {view === "appointments" && (
             <>
               <Appointments />

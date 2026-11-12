@@ -8,6 +8,13 @@
   color: var(--builders-color-blue-700);
   font-size: 1.25rem;
 }
+.design-app .customer-greeting {
+  font-family: var(--builders-font-display);
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  overflow-wrap: anywhere;
+}
 .design-app .friend-invite-form {
   gap: 1rem;
 }
@@ -33,11 +40,6 @@
 }
 .design-app .drainage-options .button {
   width: 100%;
-  font-weight: 700;
-}
-.design-app .requests-launch {
-  width: 100%;
-  margin-top: 1rem;
   font-weight: 700;
 }
 .design-app .requests-view > section + section {
@@ -162,16 +164,18 @@
   margin-top: 1.5rem;
 }
 .design-app .request-success-dialog .success-icon {
-  margin: 2rem auto 3rem;
-  width: 7rem;
-  height: 7rem;
-  color: var(--builders-color-success-300);
-}
-.design-app .request-success-dialog .success-icon svg {
+  margin: 1.5rem 0 1.5rem;
   width: 4rem;
   height: 4rem;
-  stroke-width: 2.5;
+  color: var(--builders-color-blue-700);
 }
+.design-app .request-success-dialog .success-icon svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  stroke-width: 2;
+}
+.design-app .request-success-dialog h2 { font-family: var(--builders-font-sans); font-weight: 700; font-size: 2rem; margin-bottom: 1rem; }
+.design-app .completion-return { font-weight: 700; }
 .design-app .helper-result-card {
   border: 1px solid var(--design-line);
   border-radius: var(--design-radius);

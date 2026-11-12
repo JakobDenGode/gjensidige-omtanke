@@ -400,13 +400,12 @@ export default function WinterRequest({
       {step === 4 && (
         <section className="drainage-step">
           <p>
-            Ønsker du at interessen din for en dreneringssjekk blir registrert?
+            Har du hatt problemer med dreneringen tidligere, og vil du at noen
+            skal sjekke den også?
           </p>
           <p className="note">
-            Dette er separat fra naboens oppgaver. Vi har ingen
-            fagperson-tjeneste koblet til ennå, så ingen kontakt eller
-            bestilling sendes automatisk. Vi har ikke informasjon om tidligere
-            dreneringsproblemer.
+            Dette er ikke en ekstra oppgave for naboen. Ønsket om kontakt fra
+            en fagperson lagres separat. Ingen fagperson kontaktes automatisk.
           </p>
           <div className="drainage-options">
             <button
@@ -462,11 +461,6 @@ export default function WinterRequest({
                 : "Ingen dreneringssjekk ønsket"}
             </dd>
           </dl>
-          <p className="note winter-review-disclosure">
-            Forespørselen sendes bare til den valgte hjelperen. Navn og by er
-            synlige, men adressen din deles ikke automatisk. Tidspunkt og
-            eventuelle utgifter må avtales før jobben bekreftes.
-          </p>
         </div>
       )}
       {error && (
