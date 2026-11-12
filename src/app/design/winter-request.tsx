@@ -232,10 +232,8 @@ export default function WinterRequest({
                         <span className="worker-name">
                           {member.full_name || "Venn uten navn"}
                         </span>
-                        <span>{member.city}</span>
                         <span className="note">
-                          Ca. {formatDistance(member.distance_km)} luftlinje ·
-                          bidrar innen {member.travel_km} km
+                          {formatDistance(member.distance_km)}
                         </span>
                       </span>
                       <input
