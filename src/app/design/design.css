@@ -8,37 +8,215 @@
   color: var(--builders-color-blue-700);
   font-size: 1.25rem;
 }
-.design-app .requests-launch { width: 100%; margin-top: 1rem; font-weight: 700; }
-.design-app .requests-view > section + section { margin-top: 2.5rem; }
-.design-app .requests-view > section > h3 { font-family: var(--builders-font-sans); font-weight: 700; font-size: 1.75rem; }
-.design-app .requests-view .request-record { background: var(--builders-color-blue-100); padding: clamp(1.25rem,4vw,2rem); gap: 1.25rem; }
-.design-app .requests-view .request-record > h3 { font-family: var(--builders-font-sans); font-weight: 700; font-size: 1.625rem; }
-.design-app .requests-view .request-record > .tag { background: var(--builders-color-white); }
-.design-app .request-card-details > summary { list-style: none; display: block; text-align: center; text-decoration: none; border: 1px solid var(--builders-color-blue-700); border-radius: var(--builders-radius-sm); padding: 1rem; font-weight: 700; margin-top: .75rem; }
-.design-app .request-card-details > summary::-webkit-details-marker { display: none; }
-.design-app .request-card-details[open] > summary { margin-bottom: 1.25rem; }
-.design-app .request-card-details .voice-controls { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
-.design-app .friend-main-actions { display: grid; gap: 1rem; margin-block: 2rem; }
-.design-app .friend-main-actions .button { width: 100%; min-height: 4rem; font-weight: 700; }
-.design-app .friend-display-card { display: grid; gap: 1.25rem; padding: clamp(1.25rem,4vw,2rem); border: 1px solid var(--design-line); border-radius: var(--design-radius); }
-.design-app .friend-person { display: flex; align-items: center; gap: 1rem; }
-.design-app .friend-person h3 { font-family: var(--builders-font-sans); font-weight: 700; font-size: 1.75rem; }
-.design-app .friend-person .profile-avatar { border-radius: 50%; }
-.design-app .friend-access-line { display: flex; gap: .75rem; align-items: center; font-size: 1.125rem; }
-.design-app .friend-view-link { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .75rem 0; border: 0; background: none; font-weight: 700; text-align: left; min-height: 3rem; }
-.design-app .friend-view-link span { font-size: 1.75rem; }
-.design-app .friend-profile-banner, .design-app .friend-shared-panel { padding: 1.5rem; border-radius: var(--design-radius); background: var(--builders-color-blue-100); margin-block: 1.5rem; }
-.design-app .friend-profile-switcher { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
-.design-app .friend-profile-switcher [aria-pressed="true"] { background: var(--builders-color-white); border-width: 2px; }
-.design-app .friend-shared-panel h3 + p { margin-top: .75rem; }
-.design-app .friend-shared-panel p + h3 { margin-top: 1.5rem; }
-.design-app .friend-privacy-details { margin-top: 1.5rem; }
-.design-app .request-success-dialog .success-icon { margin: 2rem auto 3rem; width: 7rem; height: 7rem; color: var(--builders-color-success-300); }
-.design-app .request-success-dialog .success-icon svg { width: 4rem; height: 4rem; stroke-width: 2.5; }
+.design-app .friend-invite-form {
+  gap: 1rem;
+}
+.design-app .friend-invite-form > label {
+  font-weight: 700;
+  margin-top: 1rem;
+}
+.design-app .friend-invite-form input:not([type="checkbox"]) {
+  min-height: 3.75rem;
+}
+.design-app .friend-invite-form .choices legend {
+  font-family: var(--builders-font-sans);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+.design-app .drainage-step > p {
+  margin-bottom: 1.5rem;
+}
+.design-app .drainage-options {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+.design-app .drainage-options .button {
+  width: 100%;
+  font-weight: 700;
+}
+.design-app .requests-launch {
+  width: 100%;
+  margin-top: 1rem;
+  font-weight: 700;
+}
+.design-app .requests-view > section + section {
+  margin-top: 2.5rem;
+}
+.design-app .requests-view > section > h3 {
+  font-family: var(--builders-font-sans);
+  font-weight: 700;
+  font-size: 1.75rem;
+}
+.design-app .requests-view .request-record {
+  background: var(--builders-color-blue-100);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  gap: 1.25rem;
+}
+.design-app .requests-view .request-record > h3 {
+  font-family: var(--builders-font-sans);
+  font-weight: 700;
+  font-size: 1.625rem;
+}
+.design-app .requests-view .request-record > .tag {
+  background: var(--builders-color-white);
+}
+.design-app .request-card-details > summary {
+  list-style: none;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid var(--builders-color-blue-700);
+  border-radius: var(--builders-radius-sm);
+  padding: 1rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+}
+.design-app .request-card-details > summary::-webkit-details-marker {
+  display: none;
+}
+.design-app .request-card-details[open] > summary {
+  margin-bottom: 1.25rem;
+}
+.design-app .request-card-details .voice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.design-app .friend-main-actions {
+  display: grid;
+  gap: 1rem;
+  margin-block: 2rem;
+}
+.design-app .friend-main-actions .button {
+  width: 100%;
+  min-height: 4rem;
+  font-weight: 700;
+}
+.design-app .friend-display-card {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--design-line);
+  border-radius: var(--design-radius);
+}
+.design-app .friend-person {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.design-app .friend-person h3 {
+  font-family: var(--builders-font-sans);
+  font-weight: 700;
+  font-size: 1.75rem;
+}
+.design-app .friend-person .profile-avatar {
+  border-radius: 50%;
+}
+.design-app .friend-access-line {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 1.125rem;
+}
+.design-app .friend-view-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border: 0;
+  background: none;
+  font-weight: 700;
+  text-align: left;
+  min-height: 3rem;
+}
+.design-app .friend-view-link span {
+  font-size: 1.75rem;
+}
+.design-app .friend-profile-banner,
+.design-app .friend-shared-panel {
+  padding: 1.5rem;
+  border-radius: var(--design-radius);
+  background: var(--builders-color-blue-100);
+  margin-block: 1.5rem;
+}
+.design-app .friend-profile-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.design-app .friend-profile-switcher [aria-pressed="true"] {
+  background: var(--builders-color-white);
+  border-width: 2px;
+}
+.design-app .friend-shared-panel h3 + p {
+  margin-top: 0.75rem;
+}
+.design-app .friend-shared-panel p + h3 {
+  margin-top: 1.5rem;
+}
+.design-app .friend-privacy-details {
+  margin-top: 1.5rem;
+}
+.design-app .request-success-dialog .success-icon {
+  margin: 2rem auto 3rem;
+  width: 7rem;
+  height: 7rem;
+  color: var(--builders-color-success-300);
+}
+.design-app .request-success-dialog .success-icon svg {
+  width: 4rem;
+  height: 4rem;
+  stroke-width: 2.5;
+}
 .design-app .helper-result-card {
   border: 1px solid var(--design-line);
   border-radius: var(--design-radius);
   padding: 1.25rem;
+}
+.design-app .helper-result-card {
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+.design-app .helper-result-card .worker-heading {
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+.design-app .helper-result-card .worker-name {
+  font-family: var(--builders-font-sans);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+.design-app .helper-result-card .worker-specialty {
+  display: block;
+  font-size: 1.125rem;
+  margin-top: 0.5rem;
+}
+.design-app .helper-result-card .helper-reputation {
+  margin-block: 1.5rem;
+}
+.design-app .helper-result-card .helper-reputation > p {
+  font-size: 1.125rem;
+}
+.design-app .helper-result-card .helper-reputation blockquote {
+  margin-block: 1.5rem;
+  line-height: 1.5;
+}
+.design-app .helper-result-card .appointment-call {
+  min-height: 3.75rem;
+  font-size: 1.125rem;
+  font-weight: 400;
+}
+@media (max-width: 380px) {
+  .design-app .helper-result-card .profile-avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .design-app .helper-result-card .worker-heading {
+    gap: 0.625rem;
+  }
 }
 .design-app .helper-result-card .worker-card {
   border: 0;

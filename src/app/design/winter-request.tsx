@@ -11,6 +11,7 @@ import {
 import { useAccount } from "./account";
 import { Avatar } from "./profile-photo";
 import { useCity } from "./city-profile";
+import { formatDistance } from "@/lib/distance";
 
 type Helper = {
   member_id: string;
@@ -41,6 +42,7 @@ export default function WinterRequest({
   const { profile } = useCity();
   const [step, setStep] = useState(1);
   const [tasks, setTasks] = useState<string[]>([]);
+  const [drainage, setDrainage] = useState<boolean | null>(null);
   const [members, setMembers] = useState<Helper[]>([]);
   const [helper, setHelper] = useState("");
   const [dates, setDates] = useState<string[]>([]);
@@ -108,7 +110,7 @@ export default function WinterRequest({
 
   return (
     <form
-      className={step === 4 ? "winter-review" : undefined}
+      className={step === 5 ? "winter-review" : undefined}
       onSubmit={async (event) => {
         event.preventDefault();
         if (busy) return;
@@ -127,7 +129,11 @@ export default function WinterRequest({
           setError("Velg minst én dato som ikke har passert.");
           return;
         }
-        if (step < 4) {
+        if (step === 4 && drainage === null) {
+          setError("Velg om du ønsker kontakt om drenering.");
+          return;
+        }
+        if (step < 5) {
           changeStep(step + 1);
           return;
         }
@@ -145,6 +151,7 @@ export default function WinterRequest({
               tasks,
               preferred_dates: dates,
               time_of_day: time,
+              drainage_contact_requested: drainage === true,
             },
             [helper],
             true,
@@ -227,11 +234,8 @@ export default function WinterRequest({
                         </span>
                         <span>{member.city}</span>
                         <span className="note">
-                          Ca.{" "}
-                          {member.distance_km.toLocaleString("nb-NO", {
-                            maximumFractionDigits: 1,
-                          })}{" "}
-                          km luftlinje · bidrar innen {member.travel_km} km
+                          Ca. {formatDistance(member.distance_km)} luftlinje ·
+                          bidrar innen {member.travel_km} km
                         </span>
                       </span>
                       <input
@@ -255,7 +259,10 @@ export default function WinterRequest({
                         <p>
                           <span aria-hidden="true">&#9733;</span>{" "}
                           {Number(member.rating).toLocaleString("nb-NO")} av 5 ·{" "}
-                          {member.review_count} vurderinger
+                          {member.review_count}{" "}
+                          {member.review_count === 1
+                            ? "anmeldelse"
+                            : "anmeldelser"}
                         </p>
                         {member.review_comment && (
                           <blockquote>
@@ -391,6 +398,41 @@ export default function WinterRequest({
         </>
       )}
       {step === 4 && (
+        <section className="drainage-step">
+          <p>
+            Ønsker du at interessen din for en dreneringssjekk blir registrert?
+          </p>
+          <p className="note">
+            Dette er separat fra naboens oppgaver. Vi har ingen
+            fagperson-tjeneste koblet til ennå, så ingen kontakt eller
+            bestilling sendes automatisk. Vi har ikke informasjon om tidligere
+            dreneringsproblemer.
+          </p>
+          <div className="drainage-options">
+            <button
+              type="button"
+              className="button outline"
+              onClick={() => {
+                setDrainage(false);
+                changeStep(5);
+              }}
+            >
+              Nei takk, det går fint
+            </button>
+            <button
+              type="button"
+              className="button"
+              onClick={() => {
+                setDrainage(true);
+                changeStep(5);
+              }}
+            >
+              Ja, registrer ønske om kontakt fra en fagperson
+            </button>
+          </div>
+        </section>
+      )}
+      {step === 5 && (
         <div className="winter-review-panel">
           <dl className="summary winter-review-summary">
             <dt>Oppgaver</dt>
@@ -413,6 +455,12 @@ export default function WinterRequest({
             </dd>
             <dt>Tid på dagen</dt>
             <dd>{time}</dd>
+            <dt>Drenering</dt>
+            <dd>
+              {drainage
+                ? "Ønske om fagpersonkontakt registreres. Ingen kontakt sendes automatisk."
+                : "Ingen dreneringssjekk ønsket"}
+            </dd>
           </dl>
           <p className="note winter-review-disclosure">
             Forespørselen sendes bare til den valgte hjelperen. Navn og by er
@@ -433,14 +481,16 @@ export default function WinterRequest({
           disabled={busy}
           onClick={() => (step === 1 ? onClose() : changeStep(step - 1))}
         >
-          {step === 4 ? "Endre" : "Tilbake"}
+          {step === 5 ? "Endre" : "Tilbake"}
         </button>
-        <button
-          className="button primary"
-          disabled={busy || (step === 2 && loading)}
-        >
-          {busy ? "Sender …" : step === 4 ? "Be om hjelp" : "Neste"}
-        </button>
+        {step !== 4 && (
+          <button
+            className="button primary"
+            disabled={busy || (step === 2 && loading)}
+          >
+            {busy ? "Sender …" : step === 5 ? "Be om hjelp" : "Neste"}
+          </button>
+        )}
       </div>
     </form>
   );

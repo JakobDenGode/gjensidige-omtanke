@@ -21,6 +21,7 @@ type RequestDraft = {
   tasks?: string[];
   preferred_dates?: string[];
   time_of_day?: string;
+  drainage_contact_requested?: boolean;
 };
 type SavedRequest = RequestDraft & {
   id: string;
@@ -94,7 +95,7 @@ export default function Account({ children }: { children: ReactNode }) {
         const { data, error } = await createSupabaseClient()
           .from("help_requests")
           .select(
-            "id,user_id,kind,category,task,timing,description,status,created_at,tasks,preferred_dates,time_of_day",
+            "id,user_id,kind,category,task,timing,description,status,created_at,tasks,preferred_dates,time_of_day,drainage_contact_requested",
           )
           .eq("user_id", user!.id)
           .order("created_at", { ascending: false })
@@ -366,53 +367,67 @@ export function SavedRequests() {
                 ? "Avbrutt"
                 : request.status === "completed"
                   ? "Fullført"
-                  : request.kind === "offer" ? "Tilbud om hjelp" : "Venter på hjelp"}
+                  : request.kind === "offer"
+                    ? "Tilbud om hjelp"
+                    : "Venter på hjelp"}
             </span>
             <h3>
               {request.tasks?.length ? request.tasks.join(" · ") : request.task}
             </h3>
-            <p>Ønsket tidspunkt: {request.timing.toLocaleLowerCase("nb-NO")}.</p>
-            <details className="request-card-details"><summary>Se forespørselen</summary>
-            {Boolean(request.preferred_dates?.length) && (
-              <p>
-                Datoer som passer:{" "}
-                {request.preferred_dates
-                  ?.map((date) =>
-                    new Date(`${date}T12:00:00Z`).toLocaleDateString("nb-NO", {
-                      timeZone: "Europe/Oslo",
-                    }),
-                  )
-                  .join(", ")}{" "}
-                · {request.time_of_day}
-              </p>
-            )}
             <p>
-              {request.kind === "offer"
-                ? "Jeg kan hjelpe"
-                : "Jeg trenger hjelp"}{" "}
-              · {request.timing}
+              Ønsket tidspunkt: {request.timing.toLocaleLowerCase("nb-NO")}.
             </p>
-            {request.description && (
-              <p className="request-description">{request.description}</p>
-            )}
-            <p className="note">
-              Opprettet{" "}
-              {new Date(request.created_at).toLocaleDateString("nb-NO")}
-            </p>
-            {request.status === "open" && (
-              <button
-                className="button outline"
-                disabled={cancelling !== null}
-                onClick={() => {
-                  if (window.confirm("Vil du avbryte denne forespørselen?"))
-                    void cancelRequest(request.id);
-                }}
-              >
-                {cancelling === request.id
-                  ? "Avbryter …"
-                  : "Avbryt forespørsel"}
-              </button>
-            )}
+            <details className="request-card-details">
+              <summary>Se forespørselen</summary>
+              {request.drainage_contact_requested && (
+                <p className="note">
+                  Du har registrert interesse for fagpersonkontakt om drenering.
+                  Ingen kontakt er sendt automatisk.
+                </p>
+              )}
+              {Boolean(request.preferred_dates?.length) && (
+                <p>
+                  Datoer som passer:{" "}
+                  {request.preferred_dates
+                    ?.map((date) =>
+                      new Date(`${date}T12:00:00Z`).toLocaleDateString(
+                        "nb-NO",
+                        {
+                          timeZone: "Europe/Oslo",
+                        },
+                      ),
+                    )
+                    .join(", ")}{" "}
+                  · {request.time_of_day}
+                </p>
+              )}
+              <p>
+                {request.kind === "offer"
+                  ? "Jeg kan hjelpe"
+                  : "Jeg trenger hjelp"}{" "}
+                · {request.timing}
+              </p>
+              {request.description && (
+                <p className="request-description">{request.description}</p>
+              )}
+              <p className="note">
+                Opprettet{" "}
+                {new Date(request.created_at).toLocaleDateString("nb-NO")}
+              </p>
+              {request.status === "open" && (
+                <button
+                  className="button outline"
+                  disabled={cancelling !== null}
+                  onClick={() => {
+                    if (window.confirm("Vil du avbryte denne forespørselen?"))
+                      void cancelRequest(request.id);
+                  }}
+                >
+                  {cancelling === request.id
+                    ? "Avbryter …"
+                    : "Avbryt forespørsel"}
+                </button>
+              )}
             </details>
           </article>
         ))}

@@ -11,6 +11,22 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+Winter requests now use five steps, including an optional drainage-contact
+interest choice before review. That flag is persisted but no professional-contact
+or booking service is integrated. The app does not assert earlier drainage damage.
+
+Friend invitations collect name, phone, optional email, and explicit one-way
+sharing permissions. Contact details stay in the owner's private pending invitation
+and are deleted when it is consumed/revoked. A provided email must match the
+accepting account; email ownership is still unverified in this demo. No SMS or
+email invitation is sent. After acceptance, friends can view only granted
+appointments (including meeting places), city weather, and request summaries;
+delegated request creation requires explicit permission. Owners can revoke extra
+sharing without deleting the friendship. No private address/insurance data is exposed.
+
+Helper distances below 1 km display rounded 100-metre increments; zero-distance
+postal areas display "under 100 m". Matching still uses unrounded distances.
+
 The home screen has a separate "Forespørsler" button. It opens own requests and
 requests sent to the signed-in user in pale-blue cards, with expandable details,
 cancellation, replies, and reviews. Mine avtaler now contains appointments only.

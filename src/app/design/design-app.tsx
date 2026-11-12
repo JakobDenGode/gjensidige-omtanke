@@ -100,7 +100,9 @@ export default function DesignApp() {
   const { saveRequest } = useAccount();
   const { profile } = useCity();
   const [view, setView] = useState<View>(
-    query === "friends" || query === "appointments" || query === "requests" ? query : null,
+    query === "friends" || query === "appointments" || query === "requests"
+      ? query
+      : null,
   );
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState(groups[0]);
@@ -166,7 +168,9 @@ export default function DesignApp() {
           ? "Hvem vil du ha hjelp av?"
           : step === 3
             ? "Når passer det?"
-            : "Ser dette riktig ut?",
+            : step === 4
+              ? "Vil du ha dreneringen sjekket?"
+              : "Ser dette riktig ut?",
     request:
       step === 1
         ? "Hva trenger du hjelp til?"
@@ -226,7 +230,13 @@ export default function DesignApp() {
             <span className="card-title">Mine avtaler</span>
           </button>
         </div>
-        <button className="button outline requests-launch" onClick={() => setView("requests")}><Icon name="help" />Forespørsler</button>
+        <button
+          className="button outline requests-launch"
+          onClick={() => setView("requests")}
+        >
+          <Icon name="help" />
+          Forespørsler
+        </button>
         <footer className="design-footer">
           <span>Gjensidige</span>
         </footer>
@@ -272,7 +282,7 @@ export default function DesignApp() {
           <div className="dialog-top">
             <span>
               {view === "request" || view === "winter"
-                ? `Steg ${step} av 4`
+                ? `Steg ${step} av ${view === "winter" ? 5 : 4}`
                 : ""}
             </span>
             <button
@@ -289,7 +299,12 @@ export default function DesignApp() {
               <Icon name="check" />
             </span>
           )}
-           <h2 id="design-dialog-title" ref={heading} tabIndex={-1} className={view === "complete" ? "sr-only" : undefined}>
+          <h2
+            id="design-dialog-title"
+            ref={heading}
+            tabIndex={-1}
+            className={view === "complete" ? "sr-only" : undefined}
+          >
             {view ? titles[view] : ""}
           </h2>
           {view === "appointments" && (
@@ -299,9 +314,10 @@ export default function DesignApp() {
           )}
           {view === "requests" && (
             <div className="requests-view">
-                <SavedRequests />
-                <NetworkTasks />
-                <details className="appointment-request-details"><summary>Fullføring og vurderinger</summary>
+              <SavedRequests />
+              <NetworkTasks />
+              <details className="appointment-request-details">
+                <summary>Fullføring og vurderinger</summary>
                 <TaskReviews />
               </details>
             </div>
