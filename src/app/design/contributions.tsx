@@ -11,6 +11,7 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
   const { profile, reloadProfile } = useCity();
   const { user } = useAccount();
   const [selected, setSelected] = useState(profile.can_help);
+  const [travel, setTravel] = useState(profile.travel_km);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return (
@@ -23,7 +24,7 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
         try {
           const { error } = await createSupabaseClient()
             .from("customer_profiles")
-            .update({ can_help: selected })
+            .update({ can_help: selected, travel_km: travel })
             .eq("user_id", user!.id)
             .select("user_id")
             .single();
@@ -67,6 +68,26 @@ export default function Contributions({ onClose }: { onClose: () => void }) {
       <p className="note" role="status">
         {selected.length} aktiviteter valgt
       </p>
+      <fieldset className="choices">
+        <legend>Hvor langt vil du reise for å bidra?</legend>
+        {[1, 3, 9].map((km) => (
+          <label className="choice" key={km}>
+            <input
+              type="radio"
+              name="travel-distance"
+              checked={travel === km}
+              disabled={busy}
+              onChange={() => setTravel(km)}
+            />
+            <span>{km} km</span>
+          </label>
+        ))}
+        <p className="note">
+          Vi bruker omtrentlig luftlinjeavstand mellom postområder, ikke
+          kjørelengde. Du må ha postnummer i profilen din for å bli funnet etter
+          avstand.
+        </p>
+      </fieldset>
       {selected
         .filter((area) => !contributionAreas.some((choice) => choice === area))
         .map((area) => (

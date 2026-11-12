@@ -22,6 +22,8 @@ type Helper = {
   review_count: number;
   review_comment: string | null;
   reviewer_name: string | null;
+  distance_km: number;
+  travel_km: number;
 };
 
 export default function WinterRequest({
@@ -36,7 +38,7 @@ export default function WinterRequest({
   onBusy: (busy: boolean) => void;
 }) {
   const { saveRequest } = useAccount();
-  const { city } = useCity();
+  const { profile } = useCity();
   const [step, setStep] = useState(1);
   const [tasks, setTasks] = useState<string[]>([]);
   const [members, setMembers] = useState<Helper[]>([]);
@@ -49,21 +51,33 @@ export default function WinterRequest({
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
+  const [missingLocations, setMissingLocations] = useState(0);
   useEffect(() => {
     let active = true;
     async function load() {
       setLoading(true);
       setError("");
       try {
-        const { data, error } =
-          await createSupabaseClient().rpc("available_helpers");
-        if (error) throw error;
+        const {
+          data: { session },
+        } = await createSupabaseClient().auth.getSession();
+        const response = await fetch("/api/helpers", {
+          headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+          signal: AbortSignal.timeout(30000),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        if (active) {
+          setMembers(data.helpers ?? []);
+          setMissingLocations(data.missingLocations ?? 0);
+        }
+      } catch (error) {
         if (active)
-          setMembers(
-            (data ?? []).filter((member: Helper) => member.city === city.name),
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Kunne ikke hente hjelperne. Prøv igjen.",
           );
-      } catch {
-        if (active) setError("Kunne ikke hente hjelperne. Prøv igjen.");
       } finally {
         if (active) setLoading(false);
       }
@@ -72,7 +86,7 @@ export default function WinterRequest({
     return () => {
       active = false;
     };
-  }, [revision, city.name]);
+  }, [revision, profile.postal_code]);
 
   function changeStep(next: number) {
     setStep(next);
@@ -178,16 +192,27 @@ export default function WinterRequest({
       {step === 2 && (
         <>
           <p>Naboer i alle aldre kan bidra</p>
+          <p className="note">
+            Avstandene er omtrentlige og beregnet mellom postområder. De er ikke
+            kjørelengder.
+          </p>
+          {!loading && missingLocations > 0 && (
+            <p className="note">
+              {missingLocations} hjelpere er utelatt fordi postnummeret mangler
+              eller ikke kunne stedfestes.
+            </p>
+          )}
           {loading && <p role="status">Henter hjelpere …</p>}
           {!loading && !error && !members.length && (
             <p className="privacy">
-              Ingen andre i {city.name} har fullført profilen sin ennå.
+              Ingen hjelpere med gyldig postnummer er innenfor sin valgte
+              reiseavstand fra postområdet ditt.
             </p>
           )}
           <fieldset className="worker-list">
             <legend className="sr-only">Velg hjelper</legend>
             {[...members]
-              .sort((a, b) => a.full_name.localeCompare(b.full_name, "nb"))
+              .sort((a, b) => a.distance_km - b.distance_km)
               .map((member) => (
                 <div className="helper-result-card" key={member.member_id}>
                   <label className="worker-card">
@@ -201,6 +226,13 @@ export default function WinterRequest({
                           {member.full_name || "Venn uten navn"}
                         </span>
                         <span>{member.city}</span>
+                        <span className="note">
+                          Ca.{" "}
+                          {member.distance_km.toLocaleString("nb-NO", {
+                            maximumFractionDigits: 1,
+                          })}{" "}
+                          km luftlinje · bidrar innen {member.travel_km} km
+                        </span>
                       </span>
                       <input
                         type="radio"

@@ -32,6 +32,7 @@ type Profile = {
   insurer: string;
   helper_visible: boolean;
   helper_phone_visible: boolean;
+  travel_km: number;
 };
 const emptyProfile: Profile = {
   city: "",
@@ -48,9 +49,10 @@ const emptyProfile: Profile = {
   insurer: "",
   helper_visible: true,
   helper_phone_visible: false,
+  travel_km: 3,
 };
 const fields =
-  "city,full_name,street_address,postal_code,phone,can_help,needs_help,preferences_completed,home_type,has_basement,snow_on_property,insurer,helper_visible,helper_phone_visible";
+  "city,full_name,street_address,postal_code,phone,can_help,needs_help,preferences_completed,home_type,has_basement,snow_on_property,insurer,helper_visible,helper_phone_visible,travel_km";
 const CityContext = createContext<{
   city: City;
   profile: Profile;
@@ -231,6 +233,21 @@ export default function CityProfile({
                 required
                 disabled={busy}
               />
+              <label htmlFor="profile-postal">
+                Postnummer (for å finne hjelp i nærheten)
+              </label>
+              <input
+                id="profile-postal"
+                value={draft.postal_code}
+                onChange={(event) =>
+                  setDraft({ ...draft, postal_code: event.target.value })
+                }
+                inputMode="numeric"
+                autoComplete="postal-code"
+                pattern="[0-9]{4}"
+                maxLength={4}
+                disabled={busy}
+              />
               <label htmlFor="profile-city">By</label>
               <select
                 id="profile-city"
@@ -263,19 +280,6 @@ export default function CityProfile({
                   }
                   autoComplete="street-address"
                   maxLength={200}
-                  disabled={busy}
-                />
-                <label htmlFor="profile-postal">Postnummer (valgfritt)</label>
-                <input
-                  id="profile-postal"
-                  value={draft.postal_code}
-                  onChange={(event) =>
-                    setDraft({ ...draft, postal_code: event.target.value })
-                  }
-                  autoComplete="postal-code"
-                  inputMode="numeric"
-                  pattern="[0-9]{4}"
-                  maxLength={4}
                   disabled={busy}
                 />
                 <label htmlFor="profile-phone">
@@ -423,6 +427,25 @@ export default function CityProfile({
                     ))}
               </fieldset>
             ))}
+            <fieldset className="choices">
+              <legend>Hvor langt vil du reise for å bidra?</legend>
+              {[1, 3, 9].map((km) => (
+                <label className="choice" key={km}>
+                  <input
+                    type="radio"
+                    name="profile-travel-distance"
+                    checked={draft.travel_km === km}
+                    disabled={busy}
+                    onChange={() => setDraft({ ...draft, travel_km: km })}
+                  />
+                  <span>{km} km</span>
+                </label>
+              ))}
+              <p className="note">
+                Omtrentlig luftlinjeavstand mellom postområder. Ikke avstand
+                mellom gateadresser eller kjørelengde.
+              </p>
+            </fieldset>
             <section className="profile-basics">
               <h2>Synlig som hjelper</h2>
               <p className="note">

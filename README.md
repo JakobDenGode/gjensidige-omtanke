@@ -11,6 +11,18 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+### Helper Travel Distance
+
+Contribution preferences and Min profil offer 1, 3, or 9 km travel radius (default 3).
+The authenticated `/api/helpers` endpoint uses Norwegian postal-code coordinates
+from Zippopotam.us, cached daily, and filters each helper by their own chosen radius.
+Distances are approximate straight-line distances between postal-area locations,
+not street-address or road distances. Different cities can match when nearby.
+Both parties need resolvable postcodes. Missing locations are excluded, never
+guessed from city centers. Exact addresses are not sent to the lookup provider.
+Postcodes are used in provider requests; the returned helper list omits them.
+There is no guarantee of geographic precision or provider availability for this POC.
+
 Contribution preferences offer eight explicit activities: snow removal, visits,
 shopping, gardening, watering plants, mobile/computer help, collecting parcels,
 and accompanying walks. Both the contribution dialog and profile use these
