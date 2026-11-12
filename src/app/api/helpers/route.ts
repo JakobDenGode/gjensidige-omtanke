@@ -53,7 +53,7 @@ export async function GET(request: Request) {
       { status: 401, headers },
     );
   try {
-    const [profile, helpers, locations] = await Promise.all([
+    const [profile, helpers, locations, samples] = await Promise.all([
       supabase
         .from("customer_profiles")
         .select("postal_code")
@@ -61,8 +61,9 @@ export async function GET(request: Request) {
         .single(),
       supabase.rpc("available_helpers"),
       supabase.rpc("helper_search_locations"),
+      supabase.from("sample_helper_reviews").select("helper_id,rating,sample_count,comment,sample_author"),
     ]);
-    if (profile.error || helpers.error || locations.error)
+    if (profile.error || helpers.error || locations.error || samples.error)
       throw new Error("Database lookup failed");
     const origin = await postalLocation(profile.data.postal_code);
     if (!origin)
@@ -108,7 +109,8 @@ export async function GET(request: Request) {
         const match = matches.find(
           (item) => item.member_id === helper.member_id,
         );
-        return match ? [{ ...helper, ...match }] : [];
+        const sample = samples.data?.find(item => item.helper_id === helper.member_id) ?? null;
+        return match ? [{ ...helper, ...match, sample_review: sample }] : [];
       })
       .sort((a, b) => a.distance_km - b.distance_km);
     return Response.json({ helpers: result, missingLocations }, { headers });

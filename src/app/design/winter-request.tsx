@@ -14,6 +14,7 @@ import { useCity } from "./city-profile";
 import { formatDistance } from "@/lib/distance";
 
 type Helper = {
+  sample_review?: { rating: number; sample_count: number; comment: string; sample_author: string } | null;
   member_id: string;
   full_name: string;
   city: string;
@@ -256,6 +257,13 @@ export default function WinterRequest({
                             <cite>{member.reviewer_name}</cite>
                           </blockquote>
                         )}
+                      </>
+                    ) : member.sample_review ? (
+                      <>
+                        <span className="tag">Eksempelanmeldelse</span>
+                        <p>{Number(member.sample_review.rating).toLocaleString("nb-NO")} av 5 · {member.sample_review.sample_count} {member.sample_review.sample_count === 1 ? "anmeldelse" : "anmeldelser"} (eksempeldata)</p>
+                        <blockquote>«{member.sample_review.comment}»<cite>{member.sample_review.sample_author} (eksempel)</cite></blockquote>
+                        <p className="note">Visningseksempel, ikke en vurdering av faktisk utført hjelp.</p>
                       </>
                     ) : (
                       <p>Ingen anmeldelser ennå</p>
