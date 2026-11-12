@@ -8,6 +8,16 @@
   color: var(--builders-color-blue-700);
   font-size: 1.25rem;
 }
+.design-app .requests-launch { width: 100%; margin-top: 1rem; font-weight: 700; }
+.design-app .requests-view > section + section { margin-top: 2.5rem; }
+.design-app .requests-view > section > h3 { font-family: var(--builders-font-sans); font-weight: 700; font-size: 1.75rem; }
+.design-app .requests-view .request-record { background: var(--builders-color-blue-100); padding: clamp(1.25rem,4vw,2rem); gap: 1.25rem; }
+.design-app .requests-view .request-record > h3 { font-family: var(--builders-font-sans); font-weight: 700; font-size: 1.625rem; }
+.design-app .requests-view .request-record > .tag { background: var(--builders-color-white); }
+.design-app .request-card-details > summary { list-style: none; display: block; text-align: center; text-decoration: none; border: 1px solid var(--builders-color-blue-700); border-radius: var(--builders-radius-sm); padding: 1rem; font-weight: 700; margin-top: .75rem; }
+.design-app .request-card-details > summary::-webkit-details-marker { display: none; }
+.design-app .request-card-details[open] > summary { margin-bottom: 1.25rem; }
+.design-app .request-card-details .voice-controls { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
 .design-app .friend-main-actions { display: grid; gap: 1rem; margin-block: 2rem; }
 .design-app .friend-main-actions .button { width: 100%; min-height: 4rem; font-weight: 700; }
 .design-app .friend-display-card { display: grid; gap: 1.25rem; padding: clamp(1.25rem,4vw,2rem); border: 1px solid var(--design-line); border-radius: var(--design-radius); }

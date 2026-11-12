@@ -11,6 +11,12 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+The home screen has a separate "Forespørsler" button. It opens own requests and
+requests sent to the signed-in user in pale-blue cards, with expandable details,
+cancellation, replies, and reviews. Mine avtaler now contains appointments only.
+The friends overview no longer has "Se som venn"; individual "Se tilgang" links
+still open the actual shared profile information.
+
 ### Helper Travel Distance
 
 Contribution preferences and Min profil offer 1, 3, or 9 km travel radius (default 3).

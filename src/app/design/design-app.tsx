@@ -85,6 +85,7 @@ const groups: { name: string; icon: keyof typeof icons; tasks: string[] }[] = [
   },
 ];
 type View =
+  | "requests"
   | "appointments"
   | "friends"
   | "contributions"
@@ -99,7 +100,7 @@ export default function DesignApp() {
   const { saveRequest } = useAccount();
   const { profile } = useCity();
   const [view, setView] = useState<View>(
-    query === "friends" || query === "appointments" ? query : null,
+    query === "friends" || query === "appointments" || query === "requests" ? query : null,
   );
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState(groups[0]);
@@ -153,6 +154,7 @@ export default function DesignApp() {
   }
   const titles: Record<Exclude<View, null>, string> = {
     appointments: "Mine avtaler",
+    requests: "Forespørsler",
     friends: "Mine venner",
     contributions: "Jeg kan hjelpe andre",
     support: "Få hjelp",
@@ -224,6 +226,7 @@ export default function DesignApp() {
             <span className="card-title">Mine avtaler</span>
           </button>
         </div>
+        <button className="button outline requests-launch" onClick={() => setView("requests")}><Icon name="help" />Forespørsler</button>
         <footer className="design-footer">
           <span>Gjensidige</span>
         </footer>
@@ -292,13 +295,16 @@ export default function DesignApp() {
           {view === "appointments" && (
             <>
               <Appointments />
-              <details className="appointment-request-details">
-                <summary>Forespørsler, svar og vurderinger</summary>
+            </>
+          )}
+          {view === "requests" && (
+            <div className="requests-view">
                 <SavedRequests />
                 <NetworkTasks />
+                <details className="appointment-request-details"><summary>Fullføring og vurderinger</summary>
                 <TaskReviews />
               </details>
-            </>
+            </div>
           )}
           {view === "friends" && <Connections />}
           {view === "contributions" && <Contributions onClose={close} />}

@@ -341,11 +341,7 @@ export function SavedRequests() {
   );
   return (
     <section aria-labelledby="requests-title">
-      <h3 id="requests-title">Mine forespørsler og tilbud</h3>
-      <p className="note">
-        Lagret på kontoen din. Ingen hjelper er tildelt og ingen avtale er
-        bestilt.
-      </p>
+      <h3 id="requests-title">Du trenger hjelp</h3>
       <button
         className="text-button"
         disabled={loading}
@@ -370,11 +366,13 @@ export function SavedRequests() {
                 ? "Avbrutt"
                 : request.status === "completed"
                   ? "Fullført"
-                  : "Åpen"}
+                  : request.kind === "offer" ? "Tilbud om hjelp" : "Venter på hjelp"}
             </span>
             <h3>
               {request.tasks?.length ? request.tasks.join(" · ") : request.task}
             </h3>
+            <p>Ønsket tidspunkt: {request.timing.toLocaleLowerCase("nb-NO")}.</p>
+            <details className="request-card-details"><summary>Se forespørselen</summary>
             {Boolean(request.preferred_dates?.length) && (
               <p>
                 Datoer som passer:{" "}
@@ -415,6 +413,7 @@ export function SavedRequests() {
                   : "Avbryt forespørsel"}
               </button>
             )}
+            </details>
           </article>
         ))}
       </div>

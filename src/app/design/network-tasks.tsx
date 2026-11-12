@@ -169,7 +169,7 @@ export default function NetworkTasks() {
 
   return (
     <section className="network-tasks" aria-labelledby="network-tasks-title">
-      <h3 id="network-tasks-title">Forespørsler fra venner</h3>
+      <h3 id="network-tasks-title">Andre trenger hjelp</h3>
       <button
         className="text-button"
         disabled={loading || busy}
@@ -185,12 +185,15 @@ export default function NetworkTasks() {
       )}
       <p role="status">{message}</p>
       {!loading && !error && !inbox.length && (
-        <p>Ingen venner har sendt deg en forespørsel ennå.</p>
+        <p>Ingen har sendt deg en forespørsel ennå.</p>
       )}
       <div className="request-list">
         {inbox.map((item) => (
           <article className="request-record" key={item.request_id}>
+            <span className="tag">{item.status === "cancelled" ? "Avbrutt" : item.status === "completed" ? "Fullført" : item.response === "pending" ? "Ny forespørsel" : responseLabels[item.response]}</span>
             <h3>{item.tasks?.length ? item.tasks.join(" · ") : item.task}</h3>
+            <p>{item.owner_name} trenger hjelp · {item.timing.toLocaleLowerCase("nb-NO")}.</p>
+            <details className="request-card-details"><summary>Se forespørselen</summary>
             {Boolean(item.preferred_dates?.length) && (
               <p>
                 Datoer som passer:{" "}
@@ -252,6 +255,7 @@ export default function NetworkTasks() {
                 ))}
               </div>
             )}
+            </details>
           </article>
         ))}
       </div>
