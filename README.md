@@ -17,8 +17,9 @@ Winter requests can now go to opted-in users outside the friend network.
 "Min profil → Synlig som hjelper" enables listing name, city, skills, photo, and
 real review scores/latest review to signed-in users. Phone listing requires a
 separate opt-in. Private addresses, help needs, and email are never listed.
-Existing accounts are not automatically published. All opted-in cities are shown,
-ordered by same city and snow-help skills, not precise geolocation or distance.
+Existing accounts are not automatically published. The winter helper list shows
+only opted-in users in the customer's saved city, alphabetically, regardless of
+friend connections. It does not filter by skill or use precise geolocation.
 Turning visibility off prevents new requests; already-shared directory requests
 remain accessible to their participants. Requests do not create friendships.
 The weather card describes possible melting, not confirmed flooding or insurance.

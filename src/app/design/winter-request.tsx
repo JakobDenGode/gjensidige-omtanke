@@ -59,7 +59,7 @@ export default function WinterRequest({
         const { data, error } =
           await createSupabaseClient().rpc("available_helpers");
         if (error) throw error;
-        if (active) setMembers(data ?? []);
+        if (active) setMembers((data ?? []).filter((member: Helper) => member.city === city.name));
       } catch {
         if (active) setError("Kunne ikke hente hjelperne. Prøv igjen.");
       } finally {
@@ -70,7 +70,7 @@ export default function WinterRequest({
     return () => {
       active = false;
     };
-  }, [revision]);
+  }, [revision, city.name]);
 
   function changeStep(next: number) {
     setStep(next);
@@ -175,27 +175,19 @@ export default function WinterRequest({
       )}
       {step === 2 && (
         <>
-          <p>
-            Naboer i alle aldre kan bidra. Vi viser alle som har valgt å være
-            synlige. Hjelpere i {city.name} og med snømåking som oppgave vises
-            først. Et ja er ikke en ferdig avtale.
-          </p>
+          <p>Naboer i alle aldre kan bidra</p>
           {loading && <p role="status">Henter hjelpere …</p>}
-          {!loading && !members.length && (
+          {!loading && !error && !members.length && (
             <p className="privacy">
-              Ingen har valgt å være synlige som hjelpere ennå. Brukere kan slå
-              dette på under Min profil → Synlig som hjelper.
+              Ingen i {city.name} har valgt å være synlige som hjelpere ennå.
+              Brukere kan slå dette på under Min profil → Synlig som hjelper.
             </p>
           )}
           <fieldset className="worker-list">
             <legend className="sr-only">Velg hjelper</legend>
             {[...members]
               .sort(
-                (a, b) =>
-                  Number(b.city === city.name) * 2 +
-                  Number(b.can_help.includes("Snømåking")) -
-                  (Number(a.city === city.name) * 2 +
-                    Number(a.can_help.includes("Snømåking"))),
+                (a, b) => a.full_name.localeCompare(b.full_name, "nb"),
               )
               .map((member) => (
                 <div className="helper-result-card" key={member.member_id}>

@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function BrandLogo() {
   return (
     <span className="brand-lockup">
-      <span>Gjensidig Omtanke</span>
+      <span>Gjensidige Omtanke</span>
       <Image
         src="/gjensidige-symbol.png"
         alt=""
