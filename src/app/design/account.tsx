@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createSupabaseClient } from "@/lib/supabase";
+import CityProfile, { useCity } from "./city-profile";
 
 type RequestDraft = {
   kind: "request" | "offer";
@@ -54,6 +55,7 @@ export function AccountMenu({
   onServices: () => void;
 }) {
   const { user } = useAccount();
+  const { city, editCity } = useCity();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -65,6 +67,10 @@ export function AccountMenu({
       <div id="account-dropdown" className="account-dropdown" popover="auto">
         <h2>Din konto</h2>
         <p className="account-email">{user?.email}</p>
+        <button className="text-button" onClick={(event) => {
+          event.currentTarget.closest<HTMLElement>("[popover]")?.hidePopover();
+          editCity();
+        }}>Endre by ({city.name})</button>
         {[
           ["Mine avtaler og forespørsler", onRequests],
           ["Mine venner", onConnections],
@@ -370,7 +376,7 @@ export default function Account({ children }: { children: ReactNode }) {
           </main>
         </>
       ) : (
-        <>{children}</>
+        <CityProfile key={user.id} userId={user.id}>{children}</CityProfile>
       )}
     </AccountContext.Provider>
   );

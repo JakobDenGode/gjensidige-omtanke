@@ -346,6 +346,10 @@
 .design-app .weather-alert .live-weather-title { padding-left: 0; }
 .design-app .weather-location { display: grid; gap: .75rem; margin-block: 1rem; }
 .design-app .weather-location select { min-width: 0; }
+.design-app .weather-evidence { margin-top: 1rem; }
+.design-app .weather-table-scroll { max-width: 100%; overflow-x: auto; }
+.design-app .weather-evidence table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.design-app .weather-evidence :is(th, td) { text-align: left; padding: .5rem; border-bottom: 1px solid var(--design-line); overflow-wrap: anywhere; }
 .design-app .weather-alert > p {
   margin-top: 0.75rem;
   font-size: 1.125rem;

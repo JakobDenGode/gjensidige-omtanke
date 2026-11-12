@@ -14,20 +14,29 @@ help requests/offers, including cancellation. Other services remain prototypes.
 ### Live Snow Forecasts
 
 The home screen uses MET Norway Locationforecast, via authenticated `POST /api/weather`.
-Choose a city or explicitly share approximate geolocation (rounded to two decimals).
-Coordinates are not stored in Supabase; the hosting provider may retain request logs.
+After signing in, accounts without a city must choose one before entering the app.
+The city is stored in the owner-only `customer_profiles` table. Weather loads
+automatically for that city. Change it under "Min konto → Endre by".
+The initial supported cities are Oslo, Bergen, Trondheim, Stavanger, and Tromsø.
+No street address or browser geolocation is collected. City-center coordinates
+are sent to MET; the hosting provider may retain request logs.
 The server identifies the app to MET and caches forecasts until at least their
 Expires time, with a ten-minute minimum. Location data is sent to MET by the server.
 MET's terms were reviewed and approved by the project owner before integration:
 https://api.met.no/doc/TermsOfService.
 
-A snow symbol in the next 24 hours' available hourly forecasts displays a suggestion,
+A snow or sleet symbol in the next 24 hours' available hourly forecasts displays a suggestion,
 not an observation, accumulation estimate, emergency alert, or claim that plowing
-is necessary. Missing or stale data shows an error rather than clear weather.
+is necessary. Snow and sleet are reported separately. An expandable table shows
+the source symbols, temperature, and precipitation in mm water (not cm snow).
+Missing or stale data shows an error rather than clear weather. Incomplete hourly
+coverage is labeled explicitly. City-center forecasts can differ from specific
+neighborhoods or the selected Yr location, especially near freezing.
 "Jeg trenger hjelp med å måke" opens the real request flow, prefilled for snow
 removal. Confirmation saves it privately; no helper is automatically assigned.
 Snow removal can also be requested manually, without weather or location access.
-There are no background/push notifications. Refresh the forecast explicitly.
+There are no background/push notifications. Weather loads on entering the app;
+use "Oppdater værvarsel" to refresh it explicitly.
 Forecast data is credited to MET Norway under CC BY 4.0; the snow suggestion is
 derived by the app. Run forecast tests with `node --test tests/weather.test.mjs` (Node 24).
 
