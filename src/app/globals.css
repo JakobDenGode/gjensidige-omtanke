@@ -57,6 +57,9 @@ body {
   line-height: var(--builders-line-height-150);
 }
 
+.brand-logo { display: block; width: 12rem; max-width: 100%; height: auto; }
+.app-header .brand-logo { margin-bottom: var(--builders-unit-25); }
+
 .app-header,
 .app-content {
   box-sizing: border-box;

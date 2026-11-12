@@ -9,7 +9,8 @@ import {
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createSupabaseClient } from "@/lib/supabase";
-import CityProfile, { useCity } from "./city-profile";
+import CityProfile from "./city-profile";
+import BrandLogo from "../brand-logo";
 
 type RequestDraft = {
   kind: "request" | "offer";
@@ -17,11 +18,14 @@ type RequestDraft = {
   task: string;
   timing: string;
   description: string;
+  tasks?: string[];
+  preferred_dates?: string[];
+  time_of_day?: string;
 };
 type SavedRequest = RequestDraft & {
   id: string;
   user_id: string;
-  status: "open" | "cancelled";
+  status: "open" | "cancelled" | "completed";
   created_at: string;
 };
 const AccountContext = createContext<{
@@ -39,92 +43,6 @@ export function useAccount() {
   const account = useContext(AccountContext);
   if (!account) throw new Error("Account provider is missing.");
   return account;
-}
-
-export function AccountMenu({
-  onRequests,
-  onConnections,
-  onDevices,
-  onHealth,
-  onServices,
-}: {
-  onRequests: () => void;
-  onConnections: () => void;
-  onDevices: () => void;
-  onHealth: () => void;
-  onServices: () => void;
-}) {
-  const { user } = useAccount();
-  const { city, editCity } = useCity();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-
-  return (
-    <div className="account-menu">
-      <button className="account-menu-trigger" popoverTarget="account-dropdown">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2" /></svg>
-        Min profil <span aria-hidden="true">&#9662;</span>
-      </button>
-      <div id="account-dropdown" className="account-dropdown" popover="auto">
-        <h2>Min profil</h2>
-        <p className="account-email">{user?.email}</p>
-        <button
-          className="text-button"
-          onClick={(event) => {
-            event.currentTarget
-              .closest<HTMLElement>("[popover]")
-              ?.hidePopover();
-            editCity();
-          }}
-        >
-          Rediger profil · {city.name}
-        </button>
-        {[
-          ["Mine avtaler og forespørsler", onRequests],
-          ["Mine venner", onConnections],
-          ["Smarte produkter", onDevices],
-          ["Lege og psykolog", onHealth],
-          ["Hus og hjem", onServices],
-        ].map(([label, action]) => (
-          <button
-            key={label as string}
-            className="text-button"
-            onClick={(event) => {
-              event.currentTarget
-                .closest<HTMLElement>("[popover]")
-                ?.hidePopover();
-              (action as () => void)();
-            }}
-          >
-            {label as string}
-          </button>
-        ))}
-        <button
-          className="button outline"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            setError("");
-            try {
-              const { error } = await createSupabaseClient().auth.signOut();
-              if (error) throw error;
-            } catch {
-              setError("Kunne ikke logge ut. Prøv igjen.");
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {busy ? "Logger ut …" : "Logg ut"}
-        </button>
-        {error && (
-          <p role="alert" className="account-error">
-            {error}
-          </p>
-        )}
-      </div>
-    </div>
-  );
 }
 
 export default function Account({ children }: { children: ReactNode }) {
@@ -172,7 +90,7 @@ export default function Account({ children }: { children: ReactNode }) {
         const { data, error } = await createSupabaseClient()
           .from("help_requests")
           .select(
-            "id,user_id,kind,category,task,timing,description,status,created_at",
+            "id,user_id,kind,category,task,timing,description,status,created_at,tasks,preferred_dates,time_of_day",
           )
           .eq("user_id", user!.id)
           .order("created_at", { ascending: false })
@@ -217,13 +135,10 @@ export default function Account({ children }: { children: ReactNode }) {
     setCancelling(id);
     setListError("");
     try {
-      const { error } = await createSupabaseClient()
-        .from("help_requests")
-        .update({ status: "cancelled" })
-        .eq("id", id)
-        .eq("user_id", user.id)
-        .select("id")
-        .single();
+      const { error } = await createSupabaseClient().rpc(
+        "cancel_help_request",
+        { target: id },
+      );
       if (error) throw error;
       setRevision((value) => value + 1);
     } catch {
@@ -250,7 +165,7 @@ export default function Account({ children }: { children: ReactNode }) {
         <>
           <header className="design-header">
             <div className="header-inner">
-              <span className="brand">Gjensidige Omtanke</span>
+              <span className="brand"><BrandLogo /></span>
             </div>
           </header>
           <main className="login-page">
@@ -441,9 +356,28 @@ export function SavedRequests() {
         {ownRequests.map((request) => (
           <article className="request-record" key={request.id}>
             <span className="tag">
-              {request.status === "cancelled" ? "Avbrutt" : "Åpen"}
+              {request.status === "cancelled"
+                ? "Avbrutt"
+                : request.status === "completed"
+                  ? "Fullført"
+                  : "Åpen"}
             </span>
-            <h3>{request.task}</h3>
+            <h3>
+              {request.tasks?.length ? request.tasks.join(" · ") : request.task}
+            </h3>
+            {Boolean(request.preferred_dates?.length) && (
+              <p>
+                Datoer som passer:{" "}
+                {request.preferred_dates
+                  ?.map((date) =>
+                    new Date(`${date}T12:00:00Z`).toLocaleDateString("nb-NO", {
+                      timeZone: "Europe/Oslo",
+                    }),
+                  )
+                  .join(", ")}{" "}
+                · {request.time_of_day}
+              </p>
+            )}
             <p>
               {request.kind === "offer"
                 ? "Jeg kan hjelpe"

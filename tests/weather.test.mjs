@@ -46,3 +46,11 @@ test("outdated and missing data are errors, not clear weather", () => {
   assert.throws(() => snowForecast(forecast("snow", undefined, "2026-11-14T12:00:00Z"), now));
   assert.throws(() => snowForecast(forecast(undefined), now));
 });
+
+test("thaw advice uses forecast above-freezing temperatures, not insurance or flood claims", () => {
+  const data = forecast("cloudy");
+  data.properties.timeseries[0].data.instant = { details: { air_temperature: 2 } };
+  assert.equal(snowForecast(data, now).thawExpected, true);
+  data.properties.timeseries[0].data.instant.details.air_temperature = -2;
+  assert.equal(snowForecast(data, now).thawExpected, false);
+});

@@ -11,6 +11,35 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+### Households, Reviews, and Property Advice
+
+"Min profil" supports home type, a basement flag, a user-reported current snow
+flag, and an optional insurer name. These are owner-only and unverified. Insurance
+coverage, prices, claims decisions, and sensor observations are not integrated.
+When the user reports snow and a basement and MET forecasts above-freezing
+temperatures, the app offers precautionary advice about drains and meltwater.
+It does not confirm flooding or coverage; keep the snow flag up to date manually.
+
+Create or join a household from the profile page. Each member has a separate
+account, joins with a private single-use seven-day invitation, and edits only
+their own preferences. Members see names and preferences, not addresses, policy
+details, or private requests. Owners can remove members, revoke invitations,
+or delete the household; other members can leave. One household per account.
+
+Under "Mine avtaler", request owners can mark an accepted current friend's help
+as actually completed and review that helper once per task. Reviews and aggregate
+scores are shown only to the helper and their current friends. No fictional
+ratings are created. Completion is owner-confirmed, not independently verified.
+Choose the helper who actually performed the task; a positive reply alone does
+not mean completion. Existing live clients can still cancel through a guarded
+status update, but cannot fabricate completed requests or reopen closed tasks.
+
+Security checks:
+
+```bash
+npx supabase@latest db query --remote=fiobfnbeiqmdlffntxxv --file supabase/tests/households_reviews.sql --yes
+```
+
 ### Live Snow Forecasts
 
 The home screen uses MET Norway Locationforecast, via authenticated `POST /api/weather`.
@@ -42,21 +71,21 @@ derived by the app. Run forecast tests with `node --test tests/weather.test.mjs`
 
 `/design` follows the revised sketch: a narrow app shell on all screen sizes,
 two-column action cards, fixed bottom navigation, and secondary views in dialogs.
-"Mine avtaler" contains actual saved requests alongside clearly marked example
-appointments. "Min konto" also opens health, home services, and smart products.
+"Mine avtaler" contains real saved requests and friend responses. "Min profil"
+sits next to "Mine venner" in the lower navigation and opens `/design/profile`.
+The contribution card updates the signed-in person's help preferences in Supabase,
+not the sketch's fictional household members.
 
-The home weather card uses real forecasts and opens saved snow-help requests.
-Earlier example-alert components are not displayed in the home screen.
-Smart-product states and the friend-view preview are fictional. Real connections
-are still managed separately; the preview cannot access another user's records.
+The weather action opens four steps: select multiple winter tasks, choose one
+actual friend, select alternative dates in the next year and a time window,
+then review and send. These structured values are saved and shown to recipients.
+The calendar is preferred availability, not confirmed helper availability.
+No fictional reviews, photos, or ratings are used for helpers.
 
-Speech input uses browser speech recognition in Norwegian when supported. It
-requires an explicit start and microphone permission, stops on dialog dismissal,
-and always offers editable text and a typing fallback. Audio may be processed by
-the browser vendor; no transcription provider or audio storage is configured.
-
-Official danger alerts, sensors, professional bookings, appointments, and delegated friend
-access require separate integrations and explicit authorization rules before use.
+Superseded voice controls, header menus, sensor/delegated previews, and fictional
+appointments have been removed. The sketch's insurance and snowmelt claims are
+not copied into live forecasts: these require verified policy, property, and
+snow-cover data. Existing request records are retained.
 
 Live app: https://gjensidige-omtanke.vercel.app
 

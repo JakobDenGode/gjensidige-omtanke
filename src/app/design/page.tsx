@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import DesignApp from "./design-app";
 import Account from "./account";
 import "./design.css";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "En god hverdag | Gjensidige Omtanke",
@@ -12,7 +13,9 @@ export default function DesignPage() {
   return (
     <div className="design-app">
       <Account>
-        <DesignApp />
+        <Suspense fallback={<p role="status">Laster …</p>}>
+          <DesignApp />
+        </Suspense>
       </Account>
     </div>
   );

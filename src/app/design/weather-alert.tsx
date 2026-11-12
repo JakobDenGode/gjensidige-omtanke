@@ -5,9 +5,8 @@ import { createSupabaseClient } from "@/lib/supabase";
 import { useCity } from "./city-profile";
 import type { WeatherSummary } from "@/lib/weather";
 
-
 export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
-  const { city } = useCity();
+  const { city, profile } = useCity();
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -17,55 +16,216 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
     let active = true;
     const controller = new AbortController();
     async function load() {
-      setBusy(true); setError(""); setWeather(null);
+      setBusy(true);
+      setError("");
+      setWeather(null);
       try {
-        const { data: { session } } = await createSupabaseClient().auth.getSession();
+        const {
+          data: { session },
+        } = await createSupabaseClient().auth.getSession();
         const response = await fetch("/api/weather", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token ?? ""}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token ?? ""}`,
+          },
           body: JSON.stringify({ lat: city.lat, lon: city.lon }),
-          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]),
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(20000),
+          ]),
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error);
         if (active) setWeather(result);
       } catch (error) {
-        if (active) setError(error instanceof Error ? error.message : "Kunne ikke hente været.");
-      } finally { if (active) setBusy(false); }
+        if (active)
+          setError(
+            error instanceof Error ? error.message : "Kunne ikke hente været.",
+          );
+      } finally {
+        if (active) setBusy(false);
+      }
     }
     void load();
-    return () => { active = false; controller.abort(); };
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [city.lat, city.lon, revision]);
 
-  const precipitation = weather?.snowExpected && weather.sleetExpected ? "snø og sludd" : weather?.snowExpected ? "snø" : "sludd";
-  return <section className="weather-alert weather-notification" aria-labelledby="live-weather-title">
-    <div className="weather-notification-heading">
-      <span className="weather-notification-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d={weather?.snowExpected ? "M16 3v26M5 9l22 14M5 23 27 9M12 5l4 4 4-4M12 27l4-4 4 4" : "M16 3C13 7 6 15 6 21a10 10 0 0 0 20 0c0-6-7-14-10-18Z"} /></svg></span>
-      <h2 id="live-weather-title" className="live-weather-title">{weather?.helpSuggested ? `Det er meldt ${precipitation}` : `Været i ${city.name}`}</h2>
-    </div>
-    {busy && <p role="status">Henter værvarsel …</p>}
-    {error && <p role="alert" className="account-error">{error}</p>}
-    {weather && <div role="status">
-      <p className="weather-notification-description">{weather.helpSuggested
-        ? "Trenger du hjelp til å måke eller rydde våt snø? Spør noen i nettverket ditt."
-        : weather.completeCoverage ? "Det er ikke meldt snø eller sludd de neste 24 timene." : "Det er ingen snø- eller sluddsymboler i de tilgjengelige timene."}</p>
-      <p className="weather-notification-location">Værvarsel for {city.name}</p>
-    </div>}
-    {weather?.helpSuggested && <button className="button weather-notification-action" onClick={onHelp}>Finn hjelp<span className="sr-only"> til snømåking</span></button>}
-    <details className="weather-notification-details"><summary>Om værvarselet</summary>
-    <p className="note">Basert på byen du har lagret på kontoen din. Du kan endre den under Min profil → Rediger profil.</p>
-    {weather && <>
-      {weather.helpSuggested && <p className="note">Varselet viser snø eller sludd i timen som starter {new Date(weather.winterAt!).toLocaleString("nb-NO", { timeZone: "Europe/Oslo", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}. Sludd er en blanding av regn og snø.</p>}
-      {!weather.completeCoverage && <p className="note">Vi har ikke sammenhengende timevarsler for hele det neste døgnet.</p>}
-      <p className="note">Dette er en prognose for sentrum av {city.name}, ikke en observasjon av været eller snø på bakken. Det kan være andre forhold der du bor. Nedbørstype kan variere med sted og høyde. Varselet sier ikke om måking er nødvendig.</p>
-      <p className="note">Prognosen ble oppdatert {new Date(weather.updatedAt).toLocaleString("nb-NO", { timeZone: "Europe/Oslo" })}.</p>
-      <details className="weather-evidence"><summary>Se verdiene fra Meteorologisk institutt</summary>
-        <p className="note">Koordinater: {city.lat}, {city.lon}. Symbolene gjelder den neste timen. Nedbør er oppgitt som mm vann, ikke cm snø. Temperatur alene brukes ikke til å avgjøre nedbørstype.</p>
-        <div className="weather-table-scroll"><table><caption>Timeverdier for {city.name}, norsk tid</caption><thead><tr><th scope="col">Fra</th><th scope="col">MET-symbol</th><th scope="col">°C</th><th scope="col">mm vann</th></tr></thead><tbody>{weather.samples.map((sample) => <tr key={sample.time}><td>{new Date(sample.time).toLocaleString("nb-NO", { timeZone: "Europe/Oslo", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</td><td>{sample.symbol}</td><td>{sample.temperature ?? "–"}</td><td>{sample.precipitation ?? "–"}</td></tr>)}</tbody></table></div>
+  const thawAdvice = Boolean(
+    weather?.thawExpected && profile.has_basement && profile.snow_on_property,
+  );
+  const precipitation =
+    weather?.snowExpected && weather.sleetExpected
+      ? "snø og sludd"
+      : weather?.snowExpected
+        ? "snø"
+        : "sludd";
+  return (
+    <section
+      className="weather-alert weather-notification"
+      aria-labelledby="live-weather-title"
+    >
+      <div className="weather-notification-heading">
+        <span className="weather-notification-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <path
+              d={
+                weather?.snowExpected
+                  ? "M16 3v26M5 9l22 14M5 23 27 9M12 5l4 4 4-4M12 27l4-4 4 4"
+                  : "M16 3C13 7 6 15 6 21a10 10 0 0 0 20 0c0-6-7-14-10-18Z"
+              }
+            />
+          </svg>
+        </span>
+        <h2 id="live-weather-title" className="live-weather-title">
+          {thawAdvice
+            ? "Plussgrader kan gi smeltevann"
+            : weather?.helpSuggested
+              ? `Det er meldt ${precipitation}`
+              : `Været i ${city.name}`}
+        </h2>
+      </div>
+      {busy && <p role="status">Henter værvarsel …</p>}
+      {error && (
+        <p role="alert" className="account-error">
+          {error}
+        </p>
+      )}
+      {weather && (
+        <div role="status">
+          <p className="weather-notification-description">
+            {thawAdvice
+              ? "Du har oppgitt snø på eiendommen og en kjeller. Varselet viser plussgrader. Sjekk at sluk er åpne, og at vann kan renne bort fra huset. Vi har ikke bekreftet flomfare på eiendommen."
+              : weather.helpSuggested
+                ? "Trenger du hjelp til å måke eller rydde våt snø? Spør noen i nettverket ditt."
+                : weather.completeCoverage
+                  ? "Det er ikke meldt snø eller sludd de neste 24 timene."
+                  : "Det er ingen snø- eller sluddsymboler i de tilgjengelige timene."}
+          </p>
+          <p className="weather-notification-location">
+            Værvarsel for {city.name}
+          </p>
+          {thawAdvice && profile.insurer && (
+            <p className="note">
+              Du har oppgitt {profile.insurer} som forsikringsselskap. Dekning
+              er ikke verifisert; sjekk vilkårene dine før du bestiller hjelp.
+            </p>
+          )}
+        </div>
+      )}
+      {(weather?.helpSuggested || thawAdvice) && (
+        <button className="button weather-notification-action" onClick={onHelp}>
+          Finn hjelp
+          <span className="sr-only"> til å rydde snø og holde sluk åpne</span>
+        </button>
+      )}
+      <details className="weather-notification-details">
+        <summary>Om værvarselet</summary>
+        <p className="note">
+          Basert på byen du har lagret på kontoen din. Du kan endre den på siden
+          Min profil i den nederste menyen.
+        </p>
+        {weather && (
+          <>
+            {weather.helpSuggested && (
+              <p className="note">
+                Varselet viser snø eller sludd i timen som starter{" "}
+                {new Date(weather.winterAt!).toLocaleString("nb-NO", {
+                  timeZone: "Europe/Oslo",
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+                . Sludd er en blanding av regn og snø.
+              </p>
+            )}
+            {!weather.completeCoverage && (
+              <p className="note">
+                Vi har ikke sammenhengende timevarsler for hele det neste
+                døgnet.
+              </p>
+            )}
+            <p className="note">
+              Dette er en prognose for sentrum av {city.name}, ikke en
+              observasjon av været eller snø på bakken. Det kan være andre
+              forhold der du bor. Nedbørstype kan variere med sted og høyde.
+              Varselet sier ikke om måking er nødvendig.
+            </p>
+            <p className="note">
+              Prognosen ble oppdatert{" "}
+              {new Date(weather.updatedAt).toLocaleString("nb-NO", {
+                timeZone: "Europe/Oslo",
+              })}
+              .
+            </p>
+            <details className="weather-evidence">
+              <summary>Se verdiene fra Meteorologisk institutt</summary>
+              <p className="note">
+                Koordinater: {city.lat}, {city.lon}. Symbolene gjelder den neste
+                timen. Nedbør er oppgitt som mm vann, ikke cm snø. Temperatur
+                alene brukes ikke til å avgjøre nedbørstype.
+              </p>
+              <div className="weather-table-scroll">
+                <table>
+                  <caption>Timeverdier for {city.name}, norsk tid</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Fra</th>
+                      <th scope="col">MET-symbol</th>
+                      <th scope="col">°C</th>
+                      <th scope="col">mm vann</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {weather.samples.map((sample) => (
+                      <tr key={sample.time}>
+                        <td>
+                          {new Date(sample.time).toLocaleString("nb-NO", {
+                            timeZone: "Europe/Oslo",
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                        <td>{sample.symbol}</td>
+                        <td>{sample.temperature ?? "–"}</td>
+                        <td>{sample.precipitation ?? "–"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </>
+        )}
+        <button
+          className="text-button"
+          disabled={busy}
+          onClick={() => setRevision((value) => value + 1)}
+        >
+          Oppdater værvarsel
+        </button>
+        <p className="note">
+          Værdata:{" "}
+          <a href="https://www.met.no/" target="_blank" rel="noreferrer">
+            Meteorologisk institutt
+          </a>
+          ,{" "}
+          <a
+            href="https://creativecommons.org/licenses/by/4.0/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            CC BY 4.0
+          </a>
+          . Snøforslaget er utledet av appen.
+        </p>
       </details>
-    </>}
-    <button className="text-button" disabled={busy} onClick={() => setRevision((value) => value + 1)}>Oppdater værvarsel</button>
-    <p className="note">Værdata: <a href="https://www.met.no/" target="_blank" rel="noreferrer">Meteorologisk institutt</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>. Snøforslaget er utledet av appen.</p>
-    </details>
-  </section>;
+    </section>
+  );
 }

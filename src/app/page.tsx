@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import BrandLogo from "./brand-logo";
 
 export default function Home() {
   const [audience, setAudience] = useState<"user" | "friend">("user");
@@ -8,6 +9,7 @@ export default function Home() {
   return (
     <>
       <header className="app-header">
+        <BrandLogo />
         <h1>Gjensidige Omtanke</h1>
       </header>
       <main className="app-content" data-audience={audience}>

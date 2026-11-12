@@ -10,6 +10,10 @@ import {
 import { cities, type City } from "@/lib/cities";
 import { taskAreas } from "@/lib/task-areas";
 import { createSupabaseClient } from "@/lib/supabase";
+import { usePathname } from "next/navigation";
+import ProfileNavigation from "./profile-navigation";
+import Household from "./household";
+import BrandLogo from "../brand-logo";
 
 type Profile = {
   city: string;
@@ -20,6 +24,10 @@ type Profile = {
   can_help: string[];
   needs_help: string[];
   preferences_completed: boolean;
+  home_type: string;
+  has_basement: boolean;
+  snow_on_property: boolean;
+  insurer: string;
 };
 const emptyProfile: Profile = {
   city: "",
@@ -30,13 +38,18 @@ const emptyProfile: Profile = {
   can_help: [],
   needs_help: [],
   preferences_completed: false,
+  home_type: "",
+  has_basement: false,
+  snow_on_property: false,
+  insurer: "",
 };
 const fields =
-  "city,full_name,street_address,postal_code,phone,can_help,needs_help,preferences_completed";
+  "city,full_name,street_address,postal_code,phone,can_help,needs_help,preferences_completed,home_type,has_basement,snow_on_property,insurer";
 const CityContext = createContext<{
   city: City;
   profile: Profile;
   editCity: () => void;
+  reloadProfile: () => void;
 } | null>(null);
 export function useCity() {
   const context = useContext(CityContext);
@@ -59,6 +72,8 @@ export default function CityProfile({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
+  const profilePage = usePathname() === "/design/profile";
+  const [message, setMessage] = useState("");
   const city = cities.find((item) => item.name === profile.city);
 
   useEffect(() => {
@@ -92,11 +107,17 @@ export default function CityProfile({
     city &&
     profile.full_name.trim() &&
     profile.preferences_completed &&
-    !editing
+    !editing &&
+    !profilePage
   ) {
     return (
       <CityContext.Provider
-        value={{ city, profile, editCity: () => setEditing(true) }}
+        value={{
+          city,
+          profile,
+          editCity: () => setEditing(true),
+          reloadProfile: () => setRevision((value) => value + 1),
+        }}
       >
         {children}
       </CityContext.Provider>
@@ -107,22 +128,27 @@ export default function CityProfile({
     <>
       <header className="design-header">
         <div className="header-inner">
-          <span className="brand">Gjensidige Omtanke</span>
+          <span className="brand"><BrandLogo /></span>
         </div>
       </header>
       <main className="login-page profile-onboarding">
         <p className="eyebrow">Din hverdag, ditt nettverk</p>
-        <h1>{editing ? "Min profil" : "Fortell litt om deg selv"}</h1>
+        <h1>
+          {editing || profilePage ? "Min profil" : "Fortell litt om deg selv"}
+        </h1>
         <p>
           Navn og by hjelper vennene dine å kjenne deg igjen. Fortell også hva
           du kan bidra med, og hva du ønsker hjelp til.
         </p>
-        <details className="profile-privacy"><summary>Hvem kan se opplysningene mine?</summary><p className="privacy">
-          Navn, by og oppgaveønsker er synlige for venner du selv godtar.
-          Adresse og telefon er valgfrie og private. Ikke legg inn
-          helseopplysninger. E-post og identitet er ikke verifisert i denne
-          demoen.
-        </p></details>
+        <details className="profile-privacy">
+          <summary>Hvem kan se opplysningene mine?</summary>
+          <p className="privacy">
+            Navn, by og oppgaveønsker er synlige for venner du selv godtar.
+            Adresse og telefon er valgfrie og private. Ikke legg inn
+            helseopplysninger. E-post og identitet er ikke verifisert i denne
+            demoen.
+          </p>
+        </details>
         <p className="note">
           Byen brukes også til værvarsler fra Meteorologisk institutt. Du kan
           endre opplysningene senere under Min profil.
@@ -152,6 +178,7 @@ export default function CityProfile({
                 return;
               setBusy(true);
               setError("");
+              setMessage("");
               try {
                 const profiles =
                   createSupabaseClient().from("customer_profiles");
@@ -171,6 +198,7 @@ export default function CityProfile({
                 setDraft(data);
                 setExists(true);
                 setEditing(false);
+                setMessage("Profilen din er oppdatert.");
               } catch {
                 setError("Kunne ikke lagre profilen din. Prøv igjen.");
               } finally {
@@ -178,81 +206,154 @@ export default function CityProfile({
               }
             }}
           >
-            <section className="profile-basics" aria-labelledby="profile-basics-title">
-            <h2 id="profile-basics-title">Om deg</h2>
-            <label htmlFor="profile-name">Fullt navn</label>
-            <input
-              id="profile-name"
-              value={draft.full_name}
-              onChange={(event) =>
-                setDraft({ ...draft, full_name: event.target.value })
-              }
-              autoComplete="name"
-              maxLength={80}
-              required
-              disabled={busy}
-            />
-            <label htmlFor="profile-city">By</label>
-            <select
-              id="profile-city"
-              value={draft.city}
-              onChange={(event) =>
-                setDraft({ ...draft, city: event.target.value })
-              }
-              required
-              disabled={busy}
+            <section
+              className="profile-basics"
+              aria-labelledby="profile-basics-title"
             >
-              <option value="">Velg by</option>
-              {cities.map((item) => (
-                <option key={item.name}>{item.name}</option>
-              ))}
-            </select>
+              <h2 id="profile-basics-title">Om deg</h2>
+              <label htmlFor="profile-name">Fullt navn</label>
+              <input
+                id="profile-name"
+                value={draft.full_name}
+                onChange={(event) =>
+                  setDraft({ ...draft, full_name: event.target.value })
+                }
+                autoComplete="name"
+                maxLength={80}
+                required
+                disabled={busy}
+              />
+              <label htmlFor="profile-city">By</label>
+              <select
+                id="profile-city"
+                value={draft.city}
+                onChange={(event) =>
+                  setDraft({ ...draft, city: event.target.value })
+                }
+                required
+                disabled={busy}
+              >
+                <option value="">Velg by</option>
+                {cities.map((item) => (
+                  <option key={item.name}>{item.name}</option>
+                ))}
+              </select>
             </section>
             <details className="profile-contact">
-            <summary>Adresse og telefon <span>(valgfritt)</span></summary>
-            <div className="profile-contact-fields">
-            <label htmlFor="profile-address">
-              Gateadresse (valgfritt, privat)
-            </label>
-            <input
-              id="profile-address"
-              value={draft.street_address}
-              onChange={(event) =>
-                setDraft({ ...draft, street_address: event.target.value })
-              }
-              autoComplete="street-address"
-              maxLength={200}
-              disabled={busy}
-            />
-            <label htmlFor="profile-postal">Postnummer (valgfritt)</label>
-            <input
-              id="profile-postal"
-              value={draft.postal_code}
-              onChange={(event) =>
-                setDraft({ ...draft, postal_code: event.target.value })
-              }
-              autoComplete="postal-code"
-              inputMode="numeric"
-              pattern="[0-9]{4}"
-              maxLength={4}
-              disabled={busy}
-            />
-            <label htmlFor="profile-phone">Telefon (valgfritt, privat)</label>
-            <input
-              id="profile-phone"
-              type="tel"
-              value={draft.phone}
-              onChange={(event) =>
-                setDraft({ ...draft, phone: event.target.value })
-              }
-              autoComplete="tel"
-              maxLength={30}
-              disabled={busy}
-            />
-            </div>
+              <summary>
+                Adresse og telefon <span>(valgfritt)</span>
+              </summary>
+              <div className="profile-contact-fields">
+                <label htmlFor="profile-address">
+                  Gateadresse (valgfritt, privat)
+                </label>
+                <input
+                  id="profile-address"
+                  value={draft.street_address}
+                  onChange={(event) =>
+                    setDraft({ ...draft, street_address: event.target.value })
+                  }
+                  autoComplete="street-address"
+                  maxLength={200}
+                  disabled={busy}
+                />
+                <label htmlFor="profile-postal">Postnummer (valgfritt)</label>
+                <input
+                  id="profile-postal"
+                  value={draft.postal_code}
+                  onChange={(event) =>
+                    setDraft({ ...draft, postal_code: event.target.value })
+                  }
+                  autoComplete="postal-code"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  disabled={busy}
+                />
+                <label htmlFor="profile-phone">
+                  Telefon (valgfritt, privat)
+                </label>
+                <input
+                  id="profile-phone"
+                  type="tel"
+                  value={draft.phone}
+                  onChange={(event) =>
+                    setDraft({ ...draft, phone: event.target.value })
+                  }
+                  autoComplete="tel"
+                  maxLength={30}
+                  disabled={busy}
+                />
+              </div>
             </details>
+            <section
+              className="profile-basics"
+              aria-labelledby="property-title"
+            >
+              <h2 id="property-title">Bolig og forsikring</h2>
+              <p className="note">
+                Opplysningene er dine egne og ikke verifisert hos et
+                forsikringsselskap. Vi kan ikke bekrefte dekning eller om en
+                skade dekkes.
+              </p>
+              <label htmlFor="home-type">Boligtype</label>
+              <select
+                id="home-type"
+                value={draft.home_type}
+                onChange={(e) =>
+                  setDraft({ ...draft, home_type: e.target.value })
+                }
+                disabled={busy}
+              >
+                <option value="">Ikke oppgitt</option>
+                {["Enebolig", "Rekkehus", "Leilighet", "Annet"].map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
+              </select>
+              <label className="profile-checkbox">
+                <input
+                  type="checkbox"
+                  checked={draft.has_basement}
+                  disabled={busy}
+                  onChange={(e) =>
+                    setDraft({ ...draft, has_basement: e.target.checked })
+                  }
+                />
+                <span>Boligen har kjeller</span>
+              </label>
+              <label className="profile-checkbox">
+                <input
+                  type="checkbox"
+                  checked={draft.snow_on_property}
+                  disabled={busy}
+                  onChange={(e) =>
+                    setDraft({ ...draft, snow_on_property: e.target.checked })
+                  }
+                />
+                <span>Det ligger snø på eiendommen nå</span>
+              </label>
+              <p className="note">
+                Oppdater snøvalget når forholdene endrer seg. Vi måler ikke snø
+                på eiendommen.
+              </p>
+              <label htmlFor="insurer">
+                Forsikringsselskap (egenoppgitt, valgfritt)
+              </label>
+              <input
+                id="insurer"
+                value={draft.insurer}
+                maxLength={100}
+                disabled={busy}
+                onChange={(e) =>
+                  setDraft({ ...draft, insurer: e.target.value })
+                }
+              />
+            </section>
             {(["can_help", "needs_help"] as const).map((field) => (
-              <fieldset className={`profile-preferences profile-preferences-${field}`} key={field}>
+              <fieldset
+                className={`profile-preferences profile-preferences-${field}`}
+                key={field}
+              >
                 <legend>
                   {field === "can_help"
                     ? "Dette kan jeg hjelpe med"
@@ -263,24 +364,24 @@ export default function CityProfile({
                   senere.
                 </p>
                 <div className="profile-checkbox-grid">
-                {taskAreas.map((area) => (
-                  <label className="profile-checkbox" key={area}>
-                    <input
-                      type="checkbox"
-                      checked={draft[field].includes(area)}
-                      disabled={busy}
-                      onChange={(event) =>
-                        setDraft({
-                          ...draft,
-                          [field]: event.target.checked
-                            ? [...draft[field], area]
-                            : draft[field].filter((item) => item !== area),
-                        })
-                      }
-                    />
-                    <span>{area}</span>
-                  </label>
-                ))}
+                  {taskAreas.map((area) => (
+                    <label className="profile-checkbox" key={area}>
+                      <input
+                        type="checkbox"
+                        checked={draft[field].includes(area)}
+                        disabled={busy}
+                        onChange={(event) =>
+                          setDraft({
+                            ...draft,
+                            [field]: event.target.checked
+                              ? [...draft[field], area]
+                              : draft[field].filter((item) => item !== area),
+                          })
+                        }
+                      />
+                      <span>{area}</span>
+                    </label>
+                  ))}
                 </div>
               </fieldset>
             ))}
@@ -288,7 +389,11 @@ export default function CityProfile({
               className="button primary"
               disabled={busy || !draft.city || !draft.full_name.trim()}
             >
-              {busy ? "Lagrer …" : "Lagre og fortsett"}
+              {busy
+                ? "Lagrer …"
+                : profilePage
+                  ? "Lagre endringer"
+                  : "Lagre og fortsett"}
             </button>
             {editing && (
               <button
@@ -305,6 +410,8 @@ export default function CityProfile({
             )}
           </form>
         )}
+        {profilePage && ready && <Household userId={userId} />}
+        {message && <p role="status">{message}</p>}
         {error && (
           <p role="alert" className="account-error">
             {error}
@@ -321,6 +428,7 @@ export default function CityProfile({
           Logg ut
         </button>
       </main>
+      {profilePage && <ProfileNavigation />}
     </>
   );
 }

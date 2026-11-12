@@ -17,7 +17,11 @@ export type Forecast = {
 export function snowForecast(forecast: Forecast, now = Date.now()) {
   const updatedAt = forecast.properties.meta.updated_at;
   const updated = Date.parse(updatedAt);
-  if (!Number.isFinite(updated) || now - updated > 6 * 60 * 60 * 1000 || updated > now + 60 * 60 * 1000) {
+  if (
+    !Number.isFinite(updated) ||
+    now - updated > 6 * 60 * 60 * 1000 ||
+    updated > now + 60 * 60 * 1000
+  ) {
     throw new Error("Forecast is outdated");
   }
   const hours = forecast.properties.timeseries.filter((entry) => {
@@ -25,14 +29,20 @@ export function snowForecast(forecast: Forecast, now = Date.now()) {
     return time >= now - 60 * 60 * 1000 && time < now + 24 * 60 * 60 * 1000;
   });
   if (!hours.length) throw new Error("Forecast has no current data");
-  const covered = hours.filter((entry) => entry.data.next_1_hours?.summary?.symbol_code);
-  if (!covered.length) throw new Error("Forecast has no hourly weather symbols");
-  const samples = covered.sort((a, b) => Date.parse(a.time) - Date.parse(b.time)).map((entry) => ({
-    time: entry.time,
-    symbol: entry.data.next_1_hours!.summary!.symbol_code!,
-    temperature: entry.data.instant?.details?.air_temperature ?? null,
-    precipitation: entry.data.next_1_hours?.details?.precipitation_amount ?? null,
-  }));
+  const covered = hours.filter(
+    (entry) => entry.data.next_1_hours?.summary?.symbol_code,
+  );
+  if (!covered.length)
+    throw new Error("Forecast has no hourly weather symbols");
+  const samples = covered
+    .sort((a, b) => Date.parse(a.time) - Date.parse(b.time))
+    .map((entry) => ({
+      time: entry.time,
+      symbol: entry.data.next_1_hours!.summary!.symbol_code!,
+      temperature: entry.data.instant?.details?.air_temperature ?? null,
+      precipitation:
+        entry.data.next_1_hours?.details?.precipitation_amount ?? null,
+    }));
   const snow = samples.find((entry) => entry.symbol.includes("snow"));
   const sleet = samples.find((entry) => entry.symbol.includes("sleet"));
   const firstWinter = samples.find((entry) => /snow|sleet/.test(entry.symbol));
@@ -52,6 +62,9 @@ export function snowForecast(forecast: Forecast, now = Date.now()) {
     completeCoverage: coverageEnd >= now + 24 * 60 * 60 * 1000,
     updatedAt,
     samples,
+    thawExpected: samples.some(
+      (sample) => sample.temperature !== null && sample.temperature > 0,
+    ),
   };
 }
 

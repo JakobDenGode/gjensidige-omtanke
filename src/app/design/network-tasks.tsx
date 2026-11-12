@@ -103,6 +103,9 @@ export function NetworkRecipients({
 }
 
 type InboxItem = {
+  tasks: string[];
+  preferred_dates: string[];
+  time_of_day: string;
   request_id: string;
   owner_name: string;
   city: string;
@@ -187,7 +190,20 @@ export default function NetworkTasks() {
       <div className="request-list">
         {inbox.map((item) => (
           <article className="request-record" key={item.request_id}>
-            <h3>{item.task}</h3>
+            <h3>{item.tasks?.length ? item.tasks.join(" · ") : item.task}</h3>
+            {Boolean(item.preferred_dates?.length) && (
+              <p>
+                Datoer som passer:{" "}
+                {item.preferred_dates
+                  .map((date) =>
+                    new Date(`${date}T12:00:00Z`).toLocaleDateString("nb-NO", {
+                      timeZone: "Europe/Oslo",
+                    }),
+                  )
+                  .join(", ")}{" "}
+                · {item.time_of_day}
+              </p>
+            )}
             <p>
               Fra {item.owner_name} · {item.city} · {item.timing}
             </p>
@@ -195,7 +211,9 @@ export default function NetworkTasks() {
             <span className="tag">
               {item.status === "cancelled"
                 ? "Avbrutt"
-                : responseLabels[item.response]}
+                : item.status === "completed"
+                  ? "Fullført"
+                  : responseLabels[item.response]}
             </span>
             {item.status === "open" && (
               <div className="voice-controls">

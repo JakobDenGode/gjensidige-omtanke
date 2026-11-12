@@ -15,8 +15,9 @@
 - Supabase is explicitly approved for real persistence. Project: `fiobfnbeiqmdlffntxxv` (Stockholm).
 - Keep schema changes in `supabase/migrations`. Enable row-level security and restrict records to their authenticated owner; never allow anonymous public access to personal data.
 - Only public client keys may use `NEXT_PUBLIC_` variables. Never commit secrets, service-role keys, or database passwords.
-- `/design` accounts, requests/offers, and user–friend connections use Supabase. Speech input uses optional browser recognition, with explicit microphone consent and typing fallback. Weather uses MET Norway forecasts through the authenticated `/api/weather` proxy with consent-based location, caching, and attribution. Snow suggestions open real requests; devices, professional bookings, appointments, and delegated friend previews remain examples.
+- `/design` follows sketch (2): compact two-column home cards, contribution preferences, winter tasks/helper/date selection, and lower navigation. Profiles are edited at `/design/profile`. Accounts, requests, preferences, and friends persist in Supabase. Weather uses MET Norway forecasts for the saved city. Do not invent insurance coverage, sensor readings, ratings, or available helpers. Superseded voice, sensor, delegated preview, and fictional appointment flows have been removed.
 - Use user/friend terminology (Bruker/Venn in Norwegian), not age-based labels. Connection roles are per relationship, not account-wide privileges. A user can have multiple friends. Connections expose only name, city, and task preferences through a restricted RPC; addresses/contact details remain owner-only. Requests are shared only with selected current friends, never automatically. No health data is shared.
+- Households share names and task preferences only. Owners confirm actual task completion before one review per task is allowed. Review scores come from stored reviews and are network-only. Property and insurer information is user-reported, never verified coverage. Meltwater advice uses reported snow/basement plus forecast plussgrader; do not claim confirmed flood risk.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
