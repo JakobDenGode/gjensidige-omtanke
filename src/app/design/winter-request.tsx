@@ -359,7 +359,7 @@ export default function WinterRequest({
       )}
       {step === 4 && (
         <>
-          <dl className="summary">
+          <dl className="summary winter-review-summary">
             <dt>Oppgaver</dt>
             <dd>
               <ul>
@@ -382,7 +382,7 @@ export default function WinterRequest({
             <dd>{time}</dd>
           </dl>
           <p className="note">
-            Forespørselen sendes bare til den valgte vennen. Navn og by er
+            Forespørselen sendes bare til den valgte hjelperen. Navn og by er
             synlige, men adressen din deles ikke automatisk. Tidspunkt og
             eventuelle utgifter må avtales før jobben bekreftes.
           </p>

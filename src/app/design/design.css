@@ -527,6 +527,17 @@
   margin-top: 1rem;
   font-size: 1rem;
 }
+.design-app .winter-review-summary {
+  margin: 0;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: var(--builders-color-blue-100);
+  border-radius: var(--design-radius);
+}
+.design-app .winter-review-summary dt { margin-top: 1.75rem; }
+.design-app .winter-review-summary dt:first-child { margin-top: 0; }
+.design-app .winter-review-summary dd { margin-top: .625rem; }
+.design-app .winter-review-summary ul { margin: 0; padding-left: 1.5rem; }
+.design-app .winter-review-summary li + li { margin-top: .375rem; }
 .design-app .summary dd {
   margin: 0.25rem 0 0;
   white-space: pre-wrap;
