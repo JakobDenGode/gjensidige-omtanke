@@ -5,8 +5,8 @@ import Link from "next/link";
 import { AccountMenu, SavedRequests, useAccount } from "./account";
 import Connections from "./connections";
 import SpeechInput from "./speech-input";
+import WeatherAlert from "./weather-alert";
 import {
-  ExampleAlerts,
   ExampleDevices,
   ExampleFriendView,
   professionalGroups,
@@ -43,6 +43,11 @@ function Icon({ name }: { name: IconName }) {
 }
 
 const groups: { name: string; icon: IconName; tasks: string[] }[] = [
+  {
+    name: "Snømåking",
+    icon: "home",
+    tasks: ["Måke inngang og gangvei", "Måke innkjørselen", "Strø glatte partier"],
+  },
   {
     name: "Praktiske småting",
     icon: "home",
@@ -150,7 +155,7 @@ type Modal =
 const navigation: { page: Page; label: string; icon: IconName }[] = [
   { page: "home", label: "Hjem", icon: "home" },
   { page: "appointments", label: "Mine avtaler", icon: "calendar" },
-  { page: "friends", label: "Tilkoblinger", icon: "friends" },
+  { page: "friends", label: "Mine venner", icon: "friends" },
 ];
 
 export default function DesignApp() {
@@ -244,17 +249,13 @@ export default function DesignApp() {
     }
   }
 
-  function startProfessional(kind: ProfessionalKind) {
-    setProfessional(kind);
+  function startSnowRequest() {
+    setProfessional(null);
     setMode("request");
-    setCategory({
-      name: professionalGroups[kind].name,
-      icon: "home",
-      tasks: professionalGroups[kind].tasks,
-    });
-    setTask(professionalGroups[kind].tasks[0]);
+    setCategory(groups[0]);
+    setTask(groups[0].tasks[0]);
     setDescription("");
-    setTiming("Så snart som mulig");
+    setTiming("Denne uken");
     setSaveError("");
     setExampleComplete(false);
     setParents([]);
@@ -305,7 +306,7 @@ export default function DesignApp() {
     appointments: ["Alt på ett sted", "Mine avtaler"],
     health: ["Profesjonelle helsetjenester", "Lege og psykolog"],
     services: ["Betalte tjenester", "Hus og hjem"],
-    friends: ["Brukere og venner", "Mine tilkoblinger"],
+    friends: ["Venner i hverdagen", "Mine venner"],
     devices: ["Tilknyttet sensorikk", "Smarte produkter"],
     preview: ["Eksempel på delt profil", "Se som venn"],
   };
@@ -378,10 +379,7 @@ export default function DesignApp() {
       </header>
 
       <main id="design-main" className="design-main">
-        <ExampleAlerts
-          onHelp={startProfessional}
-          onSecurity={() => showInfo("security")}
-        />
+        <WeatherAlert onHelp={startSnowRequest} />
         <div className="intro">
           <h1 ref={pageHeading} tabIndex={-1}>
             Er det noe du trenger hjelp til?
@@ -434,7 +432,7 @@ export default function DesignApp() {
           <span>Gjensidige · En god hverdag</span>
           <button className="text-button" onClick={() => navigate("friends")}>
             <Icon name="friends" />
-            Tilkoblinger
+            Mine venner
           </button>
         </footer>
       </main>

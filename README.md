@@ -11,13 +11,33 @@ help requests/offers, including cancellation. Other services remain prototypes.
 
 ## Design Experience
 
+### Live Snow Forecasts
+
+The home screen uses MET Norway Locationforecast, via authenticated `POST /api/weather`.
+Choose a city or explicitly share approximate geolocation (rounded to two decimals).
+Coordinates are not stored in Supabase; the hosting provider may retain request logs.
+The server identifies the app to MET and caches forecasts until at least their
+Expires time, with a ten-minute minimum. Location data is sent to MET by the server.
+MET's terms were reviewed and approved by the project owner before integration:
+https://api.met.no/doc/TermsOfService.
+
+A snow symbol in the next 24 hours' available hourly forecasts displays a suggestion,
+not an observation, accumulation estimate, emergency alert, or claim that plowing
+is necessary. Missing or stale data shows an error rather than clear weather.
+"Jeg trenger hjelp med å måke" opens the real request flow, prefilled for snow
+removal. Confirmation saves it privately; no helper is automatically assigned.
+Snow removal can also be requested manually, without weather or location access.
+There are no background/push notifications. Refresh the forecast explicitly.
+Forecast data is credited to MET Norway under CC BY 4.0; the snow suggestion is
+derived by the app. Run forecast tests with `node --test tests/weather.test.mjs` (Node 24).
+
 `/design` follows the revised sketch: a narrow app shell on all screen sizes,
 two-column action cards, fixed bottom navigation, and secondary views in dialogs.
 "Mine avtaler" contains actual saved requests alongside clearly marked example
 appointments. "Min konto" also opens health, home services, and smart products.
 
-Example alerts can be browsed and dismissed. Rain and snow open a three-step
-professional-help demonstration; no professional booking is saved or sent.
+The home weather card uses real forecasts and opens saved snow-help requests.
+Earlier example-alert components are not displayed in the home screen.
 Smart-product states and the friend-view preview are fictional. Real connections
 are still managed separately; the preview cannot access another user's records.
 
@@ -26,7 +46,7 @@ requires an explicit start and microphone permission, stops on dialog dismissal,
 and always offers editable text and a typing fallback. Audio may be processed by
 the browser vendor; no transcription provider or audio storage is configured.
 
-Real alerts, sensors, professional bookings, appointments, and delegated friend
+Official danger alerts, sensors, professional bookings, appointments, and delegated friend
 access require separate integrations and explicit authorization rules before use.
 
 Live app: https://gjensidige-omtanke.vercel.app
@@ -71,7 +91,7 @@ for pull requests. The Vercel dashboard shows the assigned public URL.
 
 ### User–Friend Connections
 
-Open "Tilkoblinger" in `/design`. A user creates a private invitation code and
+Open "Mine venner" in `/design`. A user creates a private invitation code and
 shares it with a friend, who signs into their own account and accepts it.
 Codes are single-use, expire after seven days, and are stored only as hashes.
 Creating a new code replaces the user's previous invitation. Invitations can be revoked.

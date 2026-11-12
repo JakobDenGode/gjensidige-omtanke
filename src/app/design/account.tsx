@@ -67,7 +67,7 @@ export function AccountMenu({
         <p className="account-email">{user?.email}</p>
         {[
           ["Mine avtaler og forespørsler", onRequests],
-          ["Tilkoblinger", onConnections],
+          ["Mine venner", onConnections],
           ["Smarte produkter", onDevices],
           ["Lege og psykolog", onHealth],
           ["Hus og hjem", onServices],

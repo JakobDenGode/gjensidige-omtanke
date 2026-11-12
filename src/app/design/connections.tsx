@@ -39,7 +39,7 @@ export default function Connections() {
         if (active) setConnections(data as Connection[]);
       } catch {
         if (active)
-          setError("Kunne ikke hente tilkoblinger. Prøv å oppdatere listen.");
+          setError("Kunne ikke hente vennelisten. Prøv å oppdatere listen.");
       } finally {
         if (active) setLoading(false);
       }
@@ -59,7 +59,7 @@ export default function Connections() {
       await action();
     } catch {
       setError(
-        "Handlingen kunne ikke fullføres. Kontroller tilkoblingen. Invitasjonskoder må være gyldige, ubrukte og fra en annen konto.",
+        "Handlingen kunne ikke fullføres. Sjekk internettforbindelsen og prøv igjen. Invitasjonskoden må være gyldig, ubrukt og fra en annen konto.",
       );
     } finally {
       setBusy(false);
@@ -67,17 +67,17 @@ export default function Connections() {
   }
 
   return (
-    <section className="connections-panel" aria-label="Brukere og venner">
+    <section className="connections-panel" aria-label="Mine venner">
       <p>
-        En bruker kan kobles til flere venner. Du kan også være venn for andre
-        brukere. Rollene gjelder hver enkelt tilkobling.
+        Du kan legge til flere venner. Du kan også være venn for andre brukere.
+        Du velger selv hvem du inviterer.
       </p>
       <p className="privacy">
-        En tilkobling gir foreløpig ikke tilgang til forespørsler, avtaler eller
+        Vennene dine får foreløpig ikke tilgang til forespørsler, avtaler eller
         helseopplysninger.
       </p>
       <label htmlFor="connection-name">
-        Navnet ditt (vises til den du kobler deg til)
+        Navnet ditt (vises til vennene dine)
       </label>
       <input
         id="connection-name"
@@ -103,8 +103,8 @@ export default function Connections() {
             });
           }}
         >
-          <h2>Jeg er bruker</h2>
-          <p>Inviter en venn til å koble seg til deg.</p>
+          <h2>Inviter en venn</h2>
+          <p>Del en invitasjonskode med en du vil legge til som venn.</p>
           <button className="button primary" disabled={busy || !name.trim()}>
             Lag invitasjon
           </button>
@@ -162,12 +162,12 @@ export default function Connections() {
               );
               if (error) throw error;
               setCode("");
-              setMessage("Du er nå koblet til som venn.");
+              setMessage("Invitasjonen er godtatt. Dere finner nå hverandre i vennelisten.");
               setRevision((value) => value + 1);
             });
           }}
         >
-          <h2>Jeg er venn</h2>
+          <h2>Har du fått en invitasjon?</h2>
           <p>Bruk en invitasjon du har fått fra en bruker.</p>
           <label htmlFor="connection-code">Invitasjonskode</label>
           <textarea
@@ -184,7 +184,7 @@ export default function Connections() {
             className="button primary"
             disabled={busy || !name.trim() || code.trim().length !== 64}
           >
-            Koble til som venn
+            Godta invitasjon
           </button>
         </form>
       </div>
@@ -195,7 +195,7 @@ export default function Connections() {
         </p>
       )}
       <p role="status">{message}</p>
-      <h2>Dine tilkoblinger</h2>
+      <h2>Vennelisten din</h2>
       <button
         className="text-button"
         disabled={busy || loading}
@@ -203,9 +203,9 @@ export default function Connections() {
       >
         Oppdater listen
       </button>
-      {loading && <p role="status">Henter tilkoblinger …</p>}
+      {loading && <p role="status">Henter vennelisten …</p>}
       {!loading && !error && !connections.length && (
-        <p>Du har ingen tilkoblinger ennå.</p>
+        <p>Vennelisten din er tom. Inviter en venn eller godta en invitasjon for å komme i gang.</p>
       )}
       <div className="friends-grid">
         {connections
@@ -225,13 +225,13 @@ export default function Connections() {
                 <span className="tag">{isUser ? "Venn" : "Bruker"}</span>
                 <p>
                   {isUser
-                    ? "Du er bruker i denne tilkoblingen."
-                    : "Du er venn i denne tilkoblingen."}
+                    ? `${otherName} er lagt til som venn hos deg.`
+                    : `Du er lagt til som venn hos ${otherName}.`}
                 </p>
                 {removing === connection.id ? (
                   <>
                     <p>
-                      Vil du fjerne tilkoblingen til {otherName} for dere begge?
+                      Vil du fjerne {otherName} fra vennelisten? Dere blir fjernet fra hverandres vennelister.
                     </p>
                     <button
                       className="button danger"
@@ -247,18 +247,18 @@ export default function Connections() {
                           if (error) throw error;
                           setRemoving(null);
                           setRevision((value) => value + 1);
-                          setMessage("Tilkoblingen er fjernet.");
+                          setMessage(`${otherName} er fjernet fra vennelisten.`);
                         })
                       }
                     >
-                      Ja, fjern tilkobling
+                      Ja, fjern fra vennelisten
                     </button>
                     <button
                       className="text-button"
                       disabled={busy}
                       onClick={() => setRemoving(null)}
                     >
-                      Behold tilkobling
+                      Behold i vennelisten
                     </button>
                   </>
                 ) : (
@@ -267,7 +267,7 @@ export default function Connections() {
                     disabled={busy}
                     onClick={() => setRemoving(connection.id)}
                   >
-                    Fjern tilkobling
+                    Fjern fra vennelisten
                   </button>
                 )}
               </article>

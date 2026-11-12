@@ -15,7 +15,7 @@
 - Supabase is explicitly approved for real persistence. Project: `fiobfnbeiqmdlffntxxv` (Stockholm).
 - Keep schema changes in `supabase/migrations`. Enable row-level security and restrict records to their authenticated owner; never allow anonymous public access to personal data.
 - Only public client keys may use `NEXT_PUBLIC_` variables. Never commit secrets, service-role keys, or database passwords.
-- `/design` accounts, requests/offers, and user–friend connections use Supabase. Speech input uses optional browser recognition, with explicit microphone consent and typing fallback. Alerts, devices, professional bookings, appointments, and delegated friend previews are clearly labeled examples, not integrations.
+- `/design` accounts, requests/offers, and user–friend connections use Supabase. Speech input uses optional browser recognition, with explicit microphone consent and typing fallback. Weather uses MET Norway forecasts through the authenticated `/api/weather` proxy with consent-based location, caching, and attribution. Snow suggestions open real requests; devices, professional bookings, appointments, and delegated friend previews remain examples.
 - Use user/friend terminology (Bruker/Venn in Norwegian), not age-based labels. Connection roles are per relationship, not account-wide privileges. A user can have multiple friends. Connections do not automatically share requests or health information.
 
 <!-- BEGIN:nextjs-agent-rules -->

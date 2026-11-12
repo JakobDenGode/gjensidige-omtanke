@@ -343,6 +343,9 @@
   padding-left: 3.25rem;
   font-size: 1.4375rem;
 }
+.design-app .weather-alert .live-weather-title { padding-left: 0; }
+.design-app .weather-location { display: grid; gap: .75rem; margin-block: 1rem; }
+.design-app .weather-location select { min-width: 0; }
 .design-app .weather-alert > p {
   margin-top: 0.75rem;
   font-size: 1.125rem;
