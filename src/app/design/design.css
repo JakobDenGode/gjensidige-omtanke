@@ -8,6 +8,21 @@
   color: var(--builders-color-blue-700);
   font-size: 1.25rem;
 }
+.design-app .friend-main-actions { display: grid; gap: 1rem; margin-block: 2rem; }
+.design-app .friend-main-actions .button { width: 100%; min-height: 4rem; font-weight: 700; }
+.design-app .friend-display-card { display: grid; gap: 1.25rem; padding: clamp(1.25rem,4vw,2rem); border: 1px solid var(--design-line); border-radius: var(--design-radius); }
+.design-app .friend-person { display: flex; align-items: center; gap: 1rem; }
+.design-app .friend-person h3 { font-family: var(--builders-font-sans); font-weight: 700; font-size: 1.75rem; }
+.design-app .friend-person .profile-avatar { border-radius: 50%; }
+.design-app .friend-access-line { display: flex; gap: .75rem; align-items: center; font-size: 1.125rem; }
+.design-app .friend-view-link { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .75rem 0; border: 0; background: none; font-weight: 700; text-align: left; min-height: 3rem; }
+.design-app .friend-view-link span { font-size: 1.75rem; }
+.design-app .friend-profile-banner, .design-app .friend-shared-panel { padding: 1.5rem; border-radius: var(--design-radius); background: var(--builders-color-blue-100); margin-block: 1.5rem; }
+.design-app .friend-profile-switcher { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.design-app .friend-profile-switcher [aria-pressed="true"] { background: var(--builders-color-white); border-width: 2px; }
+.design-app .friend-shared-panel h3 + p { margin-top: .75rem; }
+.design-app .friend-shared-panel p + h3 { margin-top: 1.5rem; }
+.design-app .friend-privacy-details { margin-top: 1.5rem; }
 .design-app .request-success-dialog .success-icon { margin: 2rem auto 3rem; width: 7rem; height: 7rem; color: var(--builders-color-success-300); }
 .design-app .request-success-dialog .success-icon svg { width: 4rem; height: 4rem; stroke-width: 2.5; }
 .design-app .helper-result-card {
