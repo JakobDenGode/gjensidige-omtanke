@@ -184,6 +184,7 @@ export default function DesignApp() {
 
   return (
     <>
+      {!open && <p className="poc-notice">Proof of concept · Anmeldelser kan være illustrasjoner, ikke verifiserte kundeerfaringer.</p>}
       <a className="skip-link" href="#design-main">
         Hopp til innhold
       </a>
@@ -282,7 +283,8 @@ export default function DesignApp() {
           if (event.target === event.currentTarget) close();
         }}
       >
-        <div className="dialog-inner">
+      <div className="dialog-inner">
+        <p className="poc-notice">Proof of concept · Anmeldelser kan være illustrasjoner, ikke verifiserte kundeerfaringer.</p>
           <div className="dialog-top">
             <span>
               {view === "request" || view === "winter"

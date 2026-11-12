@@ -260,10 +260,8 @@ export default function WinterRequest({
                       </>
                     ) : member.sample_review ? (
                       <>
-                        <span className="tag">Eksempelanmeldelse</span>
-                        <p>{Number(member.sample_review.rating).toLocaleString("nb-NO")} av 5 · {member.sample_review.sample_count} {member.sample_review.sample_count === 1 ? "anmeldelse" : "anmeldelser"} (eksempeldata)</p>
-                        <blockquote>«{member.sample_review.comment}»<cite>{member.sample_review.sample_author} (eksempel)</cite></blockquote>
-                        <p className="note">Visningseksempel, ikke en vurdering av faktisk utført hjelp.</p>
+                        <p>{Number(member.sample_review.rating).toLocaleString("nb-NO")} av 5 · {member.sample_review.sample_count} {member.sample_review.sample_count === 1 ? "anmeldelse" : "anmeldelser"}</p>
+                        <blockquote>«{member.sample_review.comment}»<cite>{member.sample_review.sample_author}</cite></blockquote>
                       </>
                     ) : (
                       <p>Ingen anmeldelser ennå</p>
