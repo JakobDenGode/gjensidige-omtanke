@@ -12,6 +12,7 @@ import { useAccount } from "./account";
 import { Avatar } from "./profile-photo";
 import { useCity } from "./city-profile";
 import { formatDistance } from "@/lib/distance";
+import DemoReview from "./demo-review";
 
 type Helper = {
   member_id: string;
@@ -270,21 +271,9 @@ export default function WinterRequest({
                         )}
                       </>
                     ) : (
-                      <p>Ingen vurderinger ennå</p>
+                      <DemoReview id={member.member_id} name={member.full_name} />
                     )}
                   </div>
-                  {member.phone &&
-                    /^\+?[\d\s().-]{5,30}$/.test(member.phone) && (
-                      <a
-                        className="button outline appointment-call"
-                        href={`tel:${member.phone.replace(/[\s().-]/g, "")}`}
-                      >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="m7 3 3 5-3 3c2 3 3 4 6 6l3-3 5 3c0 3-2 5-5 4C8 19 5 16 3 8c-1-3 1-5 4-5Z" />
-                        </svg>
-                        Ring {member.full_name}
-                      </a>
-                    )}
                 </div>
               ))}
           </fieldset>

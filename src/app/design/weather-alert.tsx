@@ -103,7 +103,7 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
           <p className="weather-notification-description">
             {thawAdvice
               ? profile.has_basement
-                 ? "Smeltevann kan renne inn i kjelleren. Derfor kan det være lurt å måke snø bort fra husveggen og holde sluk åpne."
+                  ? "Smeltevann kan renne inn i kjelleren din. Måk ved behov snø bort fra husveggen og hold sluk åpne for å redusere risikoen."
                 : "Plussgrader og snø eller sludd kan gi smeltevann. Hold sluk åpne og rydd våt snø der det er nødvendig."
               : weather.helpSuggested
                 ? "Trenger du hjelp til å måke eller rydde våt snø? Spør noen i nettverket ditt."
@@ -116,15 +116,8 @@ export default function WeatherAlert({ onHelp }: { onHelp: () => void }) {
           </p>
           {thawAdvice && (
             <p className="note">
-              {profile.street_address
-                ? `Hjemmet ditt, ${profile.street_address}. `
-                : ""}
-              {profile.has_basement
-                ? "Du har oppgitt at hjemmet har kjeller. "
-                : ""}
-              {profile.insurer
-                ? `Du har oppgitt ${profile.insurer} som forsikringsselskap. Dekningen er ikke verifisert.`
-                : ""}
+              {`Hjemmet ditt${profile.street_address ? `, ${profile.street_address}` : ""}${profile.has_basement ? ", har kjeller ifølge profilen din" : ""}. `}
+              {profile.insurer ? `Forsikring hos ${profile.insurer} er egenoppgitt og ikke verifisert.` : ""}
             </p>
           )}
         </div>
