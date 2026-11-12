@@ -1,4 +1,12 @@
 @font-face {
+  font-family: "GjensidigeSans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://cdn.gjensidige.no/builders/core/fonts/GjensidigeSans-Bold.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "GjensidigeDisplay";
   font-style: normal;
   font-weight: 400;
